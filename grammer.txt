@@ -4,6 +4,7 @@ Define ->
 	"int"  Variable ";" |
 	"bool" Variable ";"
 
+
 Variable ->
 	Identifier_A |
 	Identifier_A "=" Value |
