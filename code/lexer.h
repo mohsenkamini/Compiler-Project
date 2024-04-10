@@ -9,45 +9,45 @@ class Token {
     friend class Lexer;
     public:
 		enum TokenKind : unsigned short {
-			semi_colon,     // ;
-			unknown,        // unknown token
-			identifier,     // identifier like a, b, c, d, etc.
-			number,         // number like 1, 2, 3, 4, etc.
-			comma,          // ,
-			plus,           // +
-			minus,          // -
-			star,           // *
-            		mod,            // %
-			slash,          // /
-			power,          // ^
-			l_paren,        // (
-			r_paren,        // )
-			plus_equal,     // +=
-			minus_equal,    // -=
-			star_equal,     // *=
-			mod_equal,		// %=
-			slash_equal,    // /=
-			equal,          // =
-			equal_equal,    // ==
-			not_equal,      // !=
-			less,           // <
-			less_equal,     // <=
-			greater,        // >
-			greater_equal,  // >=
-			space,          // space
-			new_line,       // \n
-            		comment,        // /*
-            		uncomment,      // */
-			KW_int,         // int
-			KW_if,          // if
-			KW_else,        // else
-			KW_while,       // while
-            		KW_for,       // for
-			KW_and,         // and
-			KW_or,          // or
-			KW_true,        // true
-			KW_false,       // false
-			eof,            // end of file
+        semi_colon,     // ;
+        unknown,        // unknown token
+        identifier,     // identifier like a, b, c, d, etc.
+        number,         // number like 1, 2, 3, 4, etc.
+        comma,          // ,
+        plus,           // +
+        minus,          // -
+        star,           // *
+        mod,            // %
+        slash,          // /
+        power,          // ^
+        l_paren,        // (
+        r_paren,        // )
+        plus_equal,     // +=
+        minus_equal,    // -=
+        star_equal,     // *=
+        mod_equal,		// %=
+        slash_equal,    // /=
+        equal,          // =
+        equal_equal,    // ==
+        not_equal,      // !=
+        less,           // <
+        less_equal,     // <=
+        greater,        // >
+        greater_equal,  // >=
+        space,          // space
+        new_line,       // \n
+        comment,        // /*
+        uncomment,      // */
+        KW_int,         // int
+        KW_if,          // if
+        KW_else,        // else
+        KW_while,       // while
+        KW_for,       // for
+        KW_and,         // and
+        KW_or,          // or
+        KW_true,        // true
+        KW_false,       // false
+        eof,            // end of file
 		};
 
 
