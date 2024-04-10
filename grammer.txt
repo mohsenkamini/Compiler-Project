@@ -137,10 +137,10 @@ Else ->
 
 
 ElseIf ->
-    "else if" "(" logicalValue ")" "{" Block "}" |
-    "else if" "(" logicalValue ")" "{" Block "}" ElseIf |
-    "else if" "(" logicalValue ")" "{" "}" |
-    "else if" "(" logicalValue ")" "{" "}" ElseIf |
+    "else" "if" "(" logicalValue ")" "{" Block "}" |
+    "else" "if" "(" logicalValue ")" "{" Block "}" ElseIf |
+    "else" "if" "(" logicalValue ")" "{" "}" |
+    "else" "if" "(" logicalValue ")" "{" "}" ElseIf |
 
 
 While ->
