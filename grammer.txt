@@ -1,11 +1,11 @@
 S -> 
-    Define S | Assign S | Unary S | Print S | Comment S | If S | While S | for S
-    Define | Assign | Unary | Print | Comment | If | While | for
+    Define S | Assign S | UnaryExp S | Print S | Comment S | If S | While S | for S
+    Define | Assign | UnaryExp | Print | Comment | If | While | for
 
 
 Block -> 
-    Assign Block | Unary Block | Print Block | Comment Block | If Block | While Block | for Block
-    Assign | Unary | Print | Comment | If | While | for
+    Assign Block | UnaryExp Block | Print Block | Comment Block | If Block | While Block | for Block
+    Assign | UnaryExp | Print | Comment | If | While | for
 
 
 Define -> 
@@ -108,10 +108,14 @@ logicalValue ->
     logicalValue "or" logicalValue |
     Identifier_A
 
-    
+
 Unary ->
-    Identifier_A "++" ";" |
-    Identifier_A "--" ";"
+    Identifier_A "++" |
+    Identifier_A "--"
+
+    
+UnaryExp ->
+    Unary ";"
 
 
 If ->
@@ -157,7 +161,6 @@ ForCondition ->
 
 
 ForUpdate ->
-	Identifier_A "++" |
-    Identifier_A "--" |
+	Unary |
 	Identifier_A AssignOperation Value
     
