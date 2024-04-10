@@ -111,7 +111,7 @@ logicalValue ->
     
 Unary ->
     Identifier_A "++" ";" |
-    Identifier_A "--" ";" |
+    Identifier_A "--" ";"
 
 
 If ->
@@ -136,4 +136,28 @@ ElseIf ->
     "else if" "(" logicalValue ")" "{" Block "}" ElseIf |
     "else if" "(" logicalValue ")" "{" "}" |
     "else if" "(" logicalValue ")" "{" "}" ElseIf |
+
+
+While ->
+	"while" "(" logicalValue ")" "{" Block "}" |
+	"while" "(" logicalValue ")" "{" "}"
+
+
+For ->
+	"for" "(" ForInitialization ";" ForCondition ";" ForUpdate ")" "{" Block "}" |
+	"for" "(" ForInitialization ";" ForCondition ";" ForUpdate ")" "{" "}"
+
+
+ForInitialization ->
+	Identifier_A "=" ArithmeticValue
+
+
+ForCondition ->
+	logicalValue
+
+
+ForUpdate ->
+	Identifier_A "++" |
+    Identifier_A "--" |
+	Identifier_A AssignOperation Value
     
