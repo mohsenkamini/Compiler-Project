@@ -4,7 +4,7 @@ S ->
 
 
 Block -> 
-    Assign S | Unary S | Print S | Comment S | If S | While S | for S
+    Assign Block | Unary Block | Print Block | Comment Block | If Block | While Block | for Block
     Assign | Unary | Print | Comment | If | While | for
 
 
