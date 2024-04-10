@@ -1,4 +1,12 @@
-S -> Define S | Assign S | Unary S | Print S | Comment S
+S -> 
+    Define S | Assign S | Unary S | Print S | Comment S | If S | While S | for S
+    Define | Assign | Unary | Print | Comment | If | While | for
+
+
+Block -> 
+    Assign S | Unary S | Print S | Comment S | If S | While S | for S
+    Assign | Unary | Print | Comment | If | While | for
+
 
 Define -> 
 	"int"  Variable ";" |
@@ -98,8 +106,35 @@ logicalValue ->
     ArithmeticValue CompareOperation ArithmeticValue |
     logicalValue "and" logicalValue |
     logicalValue "or" logicalValue |
+    Identifier_A
 
     
 Unary ->
     Identifier_A "++" ";" |
     Identifier_A "--" ";" |
+
+
+If ->
+    "if" "(" logicalValue ")" "{" Block "}" |
+    "if" "(" logicalValue ")" "{" Block "}" Else |
+    "if" "(" logicalValue ")" "{" Block "}" ElseIf |
+    "if" "(" logicalValue ")" "{" Block "}" ElseIf Else |
+    
+    "if" "(" logicalValue ")" "{" "}" |
+    "if" "(" logicalValue ")" "{" "}" Else |
+    "if" "(" logicalValue ")" "{" "}" ElseIf |
+    "if" "(" logicalValue ")" "{" "}" ElseIf Else |
+    
+
+
+Else ->
+    "else" "{" Block "}" | 
+    "else" "{" "}"
+
+
+ElseIf ->
+    "else if" "(" logicalValue ")" "{" Block "}" |
+    "else if" "(" logicalValue ")" "{" Block "}" ElseIf |
+    "else if" "(" logicalValue ")" "{" "}" |
+    "else if" "(" logicalValue ")" "{" "}" ElseIf |
+    
