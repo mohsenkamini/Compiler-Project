@@ -1,4 +1,4 @@
-S -> Define S
+S -> Define S | Assign S | Unary S | Print S | Comment S
 
 Define -> 
 	"int"  Variable ";" |
@@ -46,3 +46,59 @@ Identifier_B ->
 	Digit Identifier_B |
 	Alphabet Identifier_B
     
+
+Print ->
+	"print(" Identifier_A ");"
+
+
+Comment ->
+	"/*" CommentBody
+
+
+CommentBody ->
+	"*/"
+	Digit CommentBody |
+	Alphabet CommentBody |
+
+
+Assign -> Identifier_A AssignOperation Value ";"
+
+
+AssignOperation -> "-=" | "+=" | "*=" | "/=" | "="
+
+
+Value -> LogicalValue | ArithmeticValue
+
+
+ArithmeticValue ->
+    ArithmeticValue "+" Term |
+    ArithmeticValue "-" Term | 
+    Term
+
+
+Term -> Term "*" Power |
+        Term "%" Power |
+        Term "/" Power | Power
+
+
+Power -> Power "^" Factor | Factor
+
+
+Factor -> Identifier_A | Number_A | "(" ArithmeticValue ")" | "-(" ArithmeticValue ")"
+
+
+CompareOperation -> ">" | "<" | ">=" | "<=" | "=="
+
+
+logicalValue -> 
+    "(" logicalValue ")" |
+    "true" |
+    "false" |
+    ArithmeticValue CompareOperation ArithmeticValue |
+    logicalValue "and" logicalValue |
+    logicalValue "or" logicalValue |
+
+    
+Unary ->
+    Identifier_A "++" ";" |
+    Identifier_A "--" ";" |
