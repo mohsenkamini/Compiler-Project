@@ -1,1 +1,48 @@
-// grammer
+S -> Define S
+
+Define -> 
+	"int"  Variable ";" |
+	"bool" Variable ";"
+
+Variable ->
+	Identifier_A |
+	Identifier_A "=" Value |
+	Identifier_A "," Variable |
+	Identifier_A "=" Value "," Variable
+
+
+Value ->
+	Boolean |
+	Number_A
+
+
+Digit ->
+	0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+
+Number_A ->
+	Number_B |
+	"-" Number_B
+
+
+Number_B ->
+	Digit |
+	Digit Number_B
+
+
+Boolean ->
+	true |
+	false
+
+
+Identifier_A ->
+	Alphabet |
+	Alphabet Identifier_B
+
+
+Identifier_B ->
+	Digit |
+	Alphabet | 
+	Digit Identifier_B |
+	Alphabet Identifier_B
+    
