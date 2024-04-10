@@ -31,7 +31,8 @@ Digit ->
 
 Number_A ->
 	Number_B |
-	"-" Number_B
+	"-" Number_B |
+    "+" Number_B
 
 
 Number_B ->
@@ -93,7 +94,7 @@ Term -> Term "*" Power |
 Power -> Power "^" Factor | Factor
 
 
-Factor -> Identifier_A | Number_A | "(" ArithmeticValue ")" | "-(" ArithmeticValue ")"
+Factor -> Identifier_A | Number_A | "(" ArithmeticValue ")" | "-(" ArithmeticValue ")" | "+(" ArithmeticValue ")" 
 
 
 CompareOperation -> ">" | "<" | ">=" | "<=" | "=="
