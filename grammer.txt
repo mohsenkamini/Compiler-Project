@@ -1,8 +1,10 @@
-S -> Define S
+S -> Define S | Print S | Comment S
+
 
 Define -> 
 	"int"  Variable ";" |
 	"bool" Variable ";"
+
 
 Variable ->
 	Identifier_A |
@@ -45,4 +47,17 @@ Identifier_B ->
 	Alphabet | 
 	Digit Identifier_B |
 	Alphabet Identifier_B
-    
+
+
+Print ->
+	"print(" Identifier_A ");"
+
+
+Comment ->
+	"/*" CommentBody
+
+
+CommentBody ->
+	"*/"
+	Digit CommentBody |
+	Alphabet CommentBody |
