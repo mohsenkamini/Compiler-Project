@@ -17,7 +17,7 @@ class Token {
 			plus,           // +
 			minus,          // -
 			star,           // *
-            mod,            // %
+            		mod,            // %
 			slash,          // /
 			power,          // ^
 			l_paren,        // (
@@ -36,13 +36,13 @@ class Token {
 			greater_equal,  // >=
 			space,          // space
 			new_line,       // \n
-            comment,        // /*
-            uncomment,      // */
+            		comment,        // /*
+            		uncomment,      // */
 			KW_int,         // int
 			KW_if,          // if
 			KW_else,        // else
 			KW_while,       // while
-            KW_for,       // for
+            		KW_for,       // for
 			KW_and,         // and
 			KW_or,          // or
 			KW_true,        // true
