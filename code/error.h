@@ -9,7 +9,10 @@ class Error
 {
 
 public:
-	// Add error functions here like: static void SemiColonNotFound();
+	static void LeftParenthesisExpected();
+	static void RightParenthesisExpected();
+	static void LeftBraceExpected();
+	static void RightBraceExpected();
 };
 
 #endif
