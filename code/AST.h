@@ -22,6 +22,25 @@ class AssignStatement;          // assignment statement like a = 3;
 class CommentStatement;
 class afterCheckStatement;
 
+// Base node that contains all the syntax nodes
+class Base : public AST
+{
+private:
+    llvm::SmallVector<Statement *> statements;
+
+public:
+    Base(llvm::SmallVector<Statement *> Statements) : statements(Statements) {}
+    llvm::SmallVector<Statement *> getStatements() { return statements; }
+
+    llvm::SmallVector<Statement *>::const_iterator begin() { return statements.begin(); }
+
+    llvm::SmallVector<Statement *>::const_iterator end() { return statements.end(); }
+    virtual void accept(ASTVisitor &V) override
+    {
+        V.visit(*this);
+    }
+};
+
 // stores information of a statement. For example x=56; is a statement
 class Statement : public TopLevelEntity
 {
