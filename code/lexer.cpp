@@ -29,7 +29,8 @@ namespace charinfo
 
     LLVM_READNONE inline bool isSpecialCharacter(char c)
     {
-        return c == ';' || c == ',' || c == '(' || c == ')';
+        return c == ';' || c == ',' || c == '(' || 
+               c == ')' || c == '{' || c == '}';
     }
 }
 
@@ -231,6 +232,12 @@ void Lexer::next(Token &token)
             break;
         case ')':
             formToken(token, BufferPtr + 1, Token::r_paren);
+            break;
+        case '{':
+            formToken(token, BufferPtr + 1, Token::l_brace);
+            break;
+        case '}':
+            formToken(token, BufferPtr + 1, Token::r_brace);
             break;
         }
     }
