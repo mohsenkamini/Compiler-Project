@@ -16,10 +16,35 @@ class Expression;               // top level expression that is evaluated to boo
 class IfStatement;
 class DecStatement;             // declaration statement like int a;
 class LoopStatement;
-class ElifStatement;
+class ElseIfStatement;
 class ElseStatement;
 class AssignStatement;          // assignment statement like a = 3;
 class CommentStatement;
 class afterCheckStatement;
+
+class ElseIfStatement : public Statement
+{
+private:
+    Expression *Condition;
+    llvm::SmallVector<Statement *> Statements;
+
+public:
+    ElifStatement(Expression *condition, llvm::SmallVector<Statement *> statements, StateMentType type) : Condition(condition), Statements(statements), Statement(type) {}
+
+    Expression *getCondition()
+    {
+        return Condition;
+    }
+
+    llvm::SmallVector<Statement *> getStatements()
+    {
+        return Statements;
+    }
+
+    virtual void accept(ASTVisitor &V) override
+    {
+        V.visit(*this);
+    }
+};
 
 #endif
