@@ -98,6 +98,10 @@ void Lexer::next(Token &token)
         {
             kind = Token::KW_false;
         }
+        else if (Context == "print")
+        {
+            kind = Token::KW_print;
+        }
         else
         {
             kind = Token::identifier;
