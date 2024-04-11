@@ -10,6 +10,28 @@ Base *Parser::parse()
     return Res;
 }
 
+Base *Parser::parseStatement()
+{
+    llvm::SmallVector<Statement *> statements;
+    while (!Tok.is(Token::r_brace) && !Tok.is(Token::eof))
+    {
+        switch (Tok.getKind())
+        {
+        case Token::KW_if:
+        {
+            IfStatement *statement = parseIf();
+            statements.push_back(statement);
+            break;
+        }
+        default:
+        {
+            Error::UnexpectedToken(Tok.getKind());
+        }
+        }
+    }
+    return new Base(statements);
+}
+
 IfStatement *Parser::parseIf()
 {
     advance();
