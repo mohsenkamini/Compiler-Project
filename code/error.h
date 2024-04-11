@@ -2,7 +2,7 @@
 #define ERROR_H
 
 #include <iostream>
-#include "Lexer.h"
+#include "lexer.h"
 using namespace std;
 
 class Error
@@ -10,6 +10,7 @@ class Error
 
 public:
 	// Add error functions here like: static void SemiColonNotFound();
+	static void VariableExpected();
 };
 
 #endif
