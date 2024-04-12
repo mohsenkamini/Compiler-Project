@@ -102,6 +102,7 @@ Base *Parser::parse()
         return Base(statements);
     }
     return new Base(statements);
+    }
 }
 
 void check_for_simicolon()
