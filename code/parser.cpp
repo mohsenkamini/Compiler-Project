@@ -7,8 +7,19 @@
 Base *Parser::parse()
 {
     llvm::SmallVector<Statement *> statements;
+    bool isComment = false;
     while (!Tok.is(Token::eof))
-    {
+    {   
+        if(isComment)
+        {
+            if(Tok.is(Token::uncomment))
+            {
+                isComment = false;
+            }
+            advance();
+            continue;
+        }
+
         switch (Tok.getKind())
         {
         case Token::KW_int:
@@ -80,6 +91,12 @@ Base *Parser::parse()
             check_for_simicolon();
             PrintStatement *print_statement = new PrintStatement(variable_to_be_printed);
             statements.push_back(print_statement);
+            break;
+        }
+        case Token::comment:
+        {
+            isComment = true;
+            advance();
             break;
         }
         return Base(statements);
