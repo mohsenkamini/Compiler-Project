@@ -99,6 +99,12 @@ Base *Parser::parse()
             advance();
             break;
         }
+        case Token::KW_if:
+        {
+            IfStatement *statement = parseIf();
+            statements.push_back(statement);
+            break;
+        }
         return Base(statements);
     }
     return new Base(statements);
