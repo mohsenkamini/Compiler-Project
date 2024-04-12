@@ -13,6 +13,7 @@ public:
 	static void VariableExpected();
 	static void InvalidDataForExpectedDataType();	
 	static void ExpressionExpected();
+	static void EqualExpected();
 };
 
 #endif

@@ -11,12 +11,44 @@ Base *Parser::parse()
             case Token::KW_int:
             {
                 llvm::SmallVector<DecStatement*> states = parseDefine();
+                if (states.size() == 0){
+				    return nullptr;
+			    }
+                while (states.size() > 0){
+                    statements.push_back(states.back());
+                    states.pop_back();
+			    }
+			    break;
+
             }
             case Token::KW_bool:
             {
                 llvm::SmallVector<DecStatement*> states = parseDefine();
+                if (states.size() == 0){
+				    return nullptr;
+			    }
+                while (states.size() > 0){
+                    statements.push_back(states.back());
+                    states.pop_back();
+			    }
+			    break;
+            }
+            case Token::KW_identifier:
+            {
+                string name = Tok.getText();
+                advance();
+                if (!Tok.isOneOf(Token::plus_plus, Token::minus_minus)){
+                    AssignStatement* assign = parseAssign(name);
+                    statements.push_back(assign);
+                }else{
+                    // unary
+                    // not implemented yet
+                }
+
+                break;
             }
         }
+        return Base(statements);
     }
     return new Base(statements);
 }
@@ -240,4 +272,16 @@ Expression* Parser::parseFactor()
 
 	}
 	return Res;
+}
+AssignStatement* Parser::parseAssign(string name){
+    string name;
+    Expression* value = nullptr;
+    if (Tok.is(Token::equal)){
+        advance();
+        value = parseExpression();
+        advance();
+    } else{
+        Error::EqualExpected();
+    }
+    return new AssignStatement(name, value);
 }
