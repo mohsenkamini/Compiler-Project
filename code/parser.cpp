@@ -1,7 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
-#include "Parser.h"
-#include "Error.h"
+#include "parser.h"
+#include "error.h"
 #endif
 
 Base *Parser::parse()
@@ -9,10 +9,10 @@ Base *Parser::parse()
     llvm::SmallVector<Statement *> statements;
     bool isComment = false;
     while (!Tok.is(Token::eof))
-    {   
-        if(isComment)
+    {
+        if (isComment)
         {
-            if(Tok.is(Token::uncomment))
+            if (Tok.is(Token::uncomment))
             {
                 isComment = false;
             }
@@ -65,7 +65,7 @@ Base *Parser::parse()
                 AssignmentStatement *assign = parseUnaryExpression(current);
                 statements.push_back(assign);
             }
-            check_for_simicolon();
+            check_for_semicolon();
             break;
         }
         case Token::KW_print:
@@ -77,7 +77,7 @@ Base *Parser::parse()
             }
             advance();
             // token should be identifier
-            if(!Tok.is(Token::identifier))
+            if (!Tok.is(Token::identifier))
             {
                 Error::VariableExpected();
             }
@@ -88,7 +88,7 @@ Base *Parser::parse()
                 Error::RightParenthesisExpected();
             }
             advance();
-            check_for_simicolon();
+            check_for_semicolon();
             PrintStatement *print_statement = new PrintStatement(variable_to_be_printed);
             statements.push_back(print_statement);
             break;
@@ -105,13 +105,13 @@ Base *Parser::parse()
             statements.push_back(statement);
             break;
         }
-        return Base(statements);
-    }
-    return new Base(statements);
+            return Base(statements);
+        }
+        return new Base(statements);
     }
 }
 
-void check_for_simicolon()
+void check_for_semicolon()
 {
     if (!Tok.is(Token::semi_colon))
     {
@@ -120,12 +120,12 @@ void check_for_simicolon()
     advance();
 }
 
-Expression *Parser::parseUnaryExpression(Token& token)
+Expression *Parser::parseUnaryExpression(Token &token)
 {
-    if(Tok.is(Token::plus_plus))
+    if (Tok.is(Token::plus_plus))
     {
         advance();
-        if(token.is(Token::identifier))
+        if (token.is(Token::identifier))
         {
             return new BinaryOp(BinaryOp::Plus, tok, 1);
         }
@@ -134,10 +134,10 @@ Expression *Parser::parseUnaryExpression(Token& token)
             Error::VariableExpected();
         }
     }
-    else if(Tok.is(Token::minus_minus))
+    else if (Tok.is(Token::minus_minus))
     {
         advance();
-        if(token.is(Token::identifier))
+        if (token.is(Token::identifier))
         {
             return new BinaryOp(BinaryOp::Minus, tok, 1);
         }
@@ -411,9 +411,9 @@ Base *Parser::parseStatement()
     bool isComment = false;
     while (!Tok.is(Token::r_brace) && !Tok.is(Token::eof))
     {
-        if(isComment)
+        if (isComment)
         {
-            if(Tok.is(Token::uncomment))
+            if (Tok.is(Token::uncomment))
             {
                 isComment = false;
             }
@@ -438,7 +438,7 @@ Base *Parser::parseStatement()
                 AssignmentStatement *assign = parseUnaryExpression(current);
                 statements.push_back(assign);
             }
-            check_for_simicolon();
+            check_for_semicolon();
             break;
         }
         case Token::KW_print:
@@ -450,7 +450,7 @@ Base *Parser::parseStatement()
             }
             advance();
             // token should be identifier
-            if(!Tok.is(Token::identifier))
+            if (!Tok.is(Token::identifier))
             {
                 Error::VariableExpected();
             }
@@ -461,7 +461,7 @@ Base *Parser::parseStatement()
                 Error::RightParenthesisExpected();
             }
             advance();
-            check_for_simicolon();
+            check_for_semicolon();
             PrintStatement *print_statement = new PrintStatement(variable_to_be_printed);
             statements.push_back(print_statement);
             break;
