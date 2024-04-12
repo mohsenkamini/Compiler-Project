@@ -130,17 +130,29 @@ public:
     }
 };
 
-class ElseIfStatement
+class ElseIfStatement : public Statement
 {
+
 private:
-    IfStatement *ifStatement;
+    Expression *condition;
+    llvm::SmallVector<Statement *> statements;
 
 public:
-    ElseIfStatement(IfStatement *ifStatement) : ifStatement(ifStatement) {}
+    ElseIfStatement(Expression *condition, llvm::SmallVector<Statement *> statements, StatementType type) : condition(condition), statements(statements), Statement(type) {}
 
-    IfStatement *getIfStatement()
+    Expression *getCondition()
     {
-        return ifStatement;
+        return condition;
+    }
+
+    llvm::SmallVector<Statement *> getStatements()
+    {
+        return statements;
+    }
+
+    virtual void accept(ASTVisitor &V) override
+    {
+        V.visit(*this);
     }
 };
 

@@ -63,7 +63,7 @@ Base *Parser::parse()
 }
 
 llvm::SmallVector<DecStatement *> Parser::parseDefine()
-{   
+{
     advance();
     llvm::SmallVector<DecStatement *> states;
     while (!Tok.is(Token::semi_colon))
@@ -217,7 +217,8 @@ Expression *Parser::parseLogicalTerm()
     default: // error handling
     {
         Res = parseIntExpression();
-        if (Res == nullptr){
+        if (Res == nullptr)
+        {
             Error::ExpressionExpected();
         }
     }
@@ -380,8 +381,7 @@ IfStatement *Parser::parseIf()
         advance();
         if (Tok.is(Token::KW_if))
         {
-            IfStatement *ifStatement = parseIf();
-            elseIfStatements.push_back(new ElseIfStatement(ifStatement));
+            elseIfStatements.push_back(parseElseIf());
             hasElseIf = true;
         }
         else if (Tok.is(Token::l_brace))
@@ -404,4 +404,35 @@ IfStatement *Parser::parseIf()
     }
 
     return new IfStatement(condition, allIfStatements->getStatements(), elseIfStatements, elseStatement, hasElseIf, hasElse, Statement::StatementType::If);
+}
+
+ElseIfStatement *Parser::parseElseIf()
+{
+    advance();
+    if (!Tok.is(Token::l_paren))
+    {
+        Error::LeftParenthesisExpected();
+    }
+
+    advance();
+    Expression *condition = parseLogicalValue();
+
+    if (!Tok.is(Token::r_paren))
+    {
+        Error::RightParenthesisExpected();
+    }
+
+    advance();
+    if (!Tok.is(Token::l_brace))
+    {
+        Error::LeftBraceExpected();
+    }
+    Base *allIfStatements = parseStatement();
+    if (!Tok.is(Token::r_brace))
+    {
+        Error::RightBraceExpected();
+    }
+    advance();
+
+    return new ElseIfStatement(condition, allIfStatements->getStatements(), Statement::StatementType::ElseIf);
 }
