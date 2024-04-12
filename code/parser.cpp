@@ -42,6 +42,7 @@ Base *Parser::parse()
         case Token::KW_identifier:
         {
             string name = Tok.getText();
+            Token current = Tok;
             advance();
             if (!Tok.isOneOf(Token::plus_plus, Token::minus_minus))
             {
@@ -50,8 +51,8 @@ Base *Parser::parse()
             }
             else
             {
-                // unary
-                // not implemented yet
+                AssignmentStatement *assign = parseUnaryExpression(current);
+                statements.push_back(assign);
             }
 
             break;
@@ -61,7 +62,33 @@ Base *Parser::parse()
     }
     return new Base(statements);
 }
-
+Expression *Parser::parseUnaryExpression(Token& token)
+{
+    if(Tok.is(Token::plus_plus))
+    {
+        advance();
+        if(token.is(Token::identifier))
+        {
+            return new BinaryOp(BinaryOp::Plus, tok, 1);
+        }
+        else
+        {
+            Error::VariableExpected();
+        }
+    }
+    else if(Tok.is(Token::minus_minus))
+    {
+        advance();
+        if(token.is(Token::identifier))
+        {
+            return new BinaryOp(BinaryOp::Minus, tok, 1);
+        }
+        else
+        {
+            Error::VariableExpected();
+        }
+    }
+}
 llvm::SmallVector<DecStatement *> Parser::parseDefine()
 {
     advance();
