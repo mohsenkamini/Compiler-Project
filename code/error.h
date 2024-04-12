@@ -11,6 +11,8 @@ class Error
 public:
 	// Add error functions here like: static void SemiColonNotFound();
 	static void VariableExpected();
+	static void InvalidDataForExpectedDataType();	
+	static void ExpressionExpected();
 };
 
 #endif

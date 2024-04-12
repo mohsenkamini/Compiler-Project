@@ -3,19 +3,241 @@
 #include "Parser.h"
 #include "Error.h"
 #endif
-
 Base *Parser::parse()
 {
     llvm::SmallVector<Statement*> statements;
     while (!Tok.is(Token::eof)) {
         switch (Tok.getKind()) {
-            case Token::identifier:
+            case Token::KW_int:
             {
-                AssignStatement* state = parseAssign();
-			    statements.push_back(state);
-			    break;   
+                llvm::SmallVector<DecStatement*> states = parseDefine();
+            }
+            case Token::KW_bool:
+            {
+                llvm::SmallVector<DecStatement*> states = parseDefine();
             }
         }
     }
     return new Base(statements);
+}
+llvm::SmallVector<DecStatement*> Parser::parseDefine(){
+    llvm::SmallVector<DecStatement*> states;
+    while (!Tok.is(Token::semi_colon)){
+        string name;
+        Expression* value = nullptr;
+        if (Tok.is(Token::identifier)){
+            name = Tok.getText();
+            advance();
+        }
+        else{
+            Error::VariableExpected();
+        }
+        if (Tok.is(Token::equal)){
+            advance();
+            value = parseExpression();
+            advance();
+        } else if (Tok.is(Token::comma)){
+            advance();
+        } else if (Tok.is(Token::semi_colon)){
+            break;
+        } else{
+            Error::VariableExpected();
+        }
+        DecStatement* state = new DecStatement(name, value);
+        states.push_back(state);
+    }
+    return states;
+}
+Expression* Parser::parseExpression()
+{
+    Expression* expr;
+    bool isFound = false;
+	try{
+        expr = parseIntExpression();
+        isFound = true;
+    }catch(...){
+    }
+    try{
+        expr = parseLogicalExpression();
+        isFound = true;
+    }catch(...){
+    }
+    if (!isFound){
+        Error::ExpressionExpected();
+    }
+	return expr;
+}
+Expression* Parser::parseLogicalExpression(){
+    Expression* left = parseLogicalComparison();
+	while (Tok.isOneOf(Token::KW_and, Token::KW_or))
+	{
+        BooleanOp::Operator Op;
+        switch (Tok.getKind())
+        {
+            case Token::KW_and:
+                Op = BooleanOp::And;
+                break;
+            case Token::KW_or:
+                Op = BooleanOp::Or;
+                break;
+            default:
+                break;
+        }
+        advance();
+        Expression* Right = parseLogicalComparison();
+        left = new BooleanOp(Op, left, Right);
+	}
+    return left;
+}
+Expression* Parser::parseLogicalComparison(){
+    Expression* left = parseLogicalTerm();
+    while (Tok.isOneOf(Token::equal_equal, Token::not_equal, token::less, token::less_equal, token::greater, token::greater_equal))
+	{
+        BooleanOp::Operator Op;
+        switch (Tok.getKind())
+        {
+            case Token::equal_equal:
+                Op = BooleanOp::Equal;
+                break;
+            case Token::not_equal:
+                Op = BooleanOp::NotEqual;
+                break;
+            case Token::less:
+                Op = BooleanOp::Less;
+                break;
+            case Token::less_equal:
+                Op = BooleanOp::LessEqual;
+                break;
+            case Token::greater:
+                Op = BooleanOp::Greater;
+                break;
+            case Token::greater_equal:
+                Op = BooleanOp::GreaterEqual;
+                break;
+            default:
+                break;
+        }
+        advance();
+        Expression* Right = parseLogicalTerm();
+        left = new BooleanOp(Op, left, Right);
+	}
+    return left;
+}
+
+Expression* Parser::parseLogicalTerm(){
+    Expression* left = parseLogicalFactor();
+    Expression* Res = nullptr;
+    switch (Tok.getKind())
+    {
+        case Token::l_paren:
+        {
+            advance();
+            Res = parseLogicalExpression();
+            if (!consume(Token::r_paren))
+                break;
+        }
+        case Token::KW_true:
+        {
+            Res = new Expression(true);
+            advance();
+            break;
+        }
+        case Token::KW_false:
+        {
+            Res = new Expression(false);
+            advance();
+            break;
+        }
+        case Token::number:
+        {
+            int number;
+            Tok.getText().getAsInteger(10, number);
+            Res = new Expression(number);
+            advance();
+            break;
+        }
+        case Token::identifier:
+        {
+            Res = new Variable(Tok.getText());
+            advance();
+            break;
+        }
+        default: // error handling
+	    {
+		Error::NumberVariableExpected();
+	    }
+    }
+    return Res;
+}
+Expression* Parser::parseIntExpression(){
+    Expression* Left = parseTerm();
+	while (Tok.isOneOf(Token::plus, Token::minus))
+	{
+		BinaryOp::Operator Op =
+			Tok.is(Token::plus) ? BinaryOp::Plus : BinaryOp::Minus;
+		advance();
+		Expression* Right = parseTerm();
+		Left = new BinaryOp(Op, Left, Right);
+	}
+    return left;
+}
+Expression* Parser::parseTerm()
+{
+	Expression* Left = parsePower();
+	while (Tok.isOneOf(Token::star, Token::slash, Token::mod))
+	{
+		BinaryOp::Operator Op =
+			Tok.is(Token::star) ? BinaryOp::Mul : Tok.is(Token::slash) ? BinaryOp::Div : BinaryOp::Mod;
+		advance();
+		Expression* Right = parsePower();
+		Left = new BinaryOp(Op, Left, Right);
+	}
+	return Left;
+}
+Expression* Parser::parsePower()
+{
+	Expression* Left = parseFactor();
+	while (Tok.is(Token::power))
+	{
+		BinaryOp::Operator Op =
+			BinaryOp::Pow;
+		advance();
+		Expression* Right = parseFactor();
+		Left = new BinaryOp(Op, Left, Right);
+	}
+	return Left;
+}
+Expression* Parser::parseFactor()
+{
+	Expression* Res = nullptr;
+	switch (Tok.getKind())
+	{
+	case Token::number:
+	{
+		int number;
+		Tok.getText().getAsInteger(10, number);
+		Res = new Expression(number);
+		advance();
+		break;
+	}
+	case Token::ident:
+	{
+		Res = new Expression(Tok.getText());
+		advance();
+		break;
+	}
+	case Token::l_paren:
+	{
+		advance();
+		Res = parseExpr();
+		if (!consume(Token::r_paren))
+			break;
+	}
+	default: // error handling
+	{
+		Error::NumberVariableExpected();
+	}
+
+	}
+	return Res;
 }
