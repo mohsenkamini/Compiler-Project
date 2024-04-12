@@ -3,21 +3,25 @@
 void Error::VariableExpected()
 {
     cout << "Variable expected" << endl;
+    exit(3);
 }
 
 void Error::InvalidDataForExpectedDataType()
 {
     cout << "Invalid data for expected data type" << endl;
+    exit(3);
 }
 
 void Error::ExpressionExpected()
 {
     cout << "Expression expected" << endl;
+    exit(3);
 }
 
 void Error::EqualExpected()
 {
     cout << "Equal expected" << endl;
+    exit(3);
 }
 
 void Error::LeftParenthesisExpected()

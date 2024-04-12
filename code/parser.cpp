@@ -63,7 +63,8 @@ Base *Parser::parse()
 }
 
 llvm::SmallVector<DecStatement *> Parser::parseDefine()
-{
+{   
+    advance();
     llvm::SmallVector<DecStatement *> states;
     while (!Tok.is(Token::semi_colon))
     {
@@ -191,7 +192,6 @@ Expression *Parser::parseLogicalComparison()
 
 Expression *Parser::parseLogicalTerm()
 {
-    Expression *left = parseLogicalFactor();
     Expression *Res = nullptr;
     switch (Tok.getKind())
     {
@@ -214,23 +214,12 @@ Expression *Parser::parseLogicalTerm()
         advance();
         break;
     }
-    case Token::number:
-    {
-        int number;
-        Tok.getText().getAsInteger(10, number);
-        Res = new Expression(number);
-        advance();
-        break;
-    }
-    case Token::identifier:
-    {
-        Res = new Variable(Tok.getText());
-        advance();
-        break;
-    }
     default: // error handling
     {
-        Error::NumberVariableExpected();
+        Res = parseIntExpression();
+        if (Res == nullptr){
+            Error::ExpressionExpected();
+        }
     }
     }
     return Res;
