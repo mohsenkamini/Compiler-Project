@@ -186,7 +186,7 @@ void Lexer::next(Token &token)
 			formToken(token, BufferPtr + 2, Token::uncomment); // uncomment
 		}
 		else if (*BufferPtr == '+' && *(BufferPtr + 1) == '+')
-		{ 
+		{
 			formToken(token, BufferPtr + 2, Token::plus_plus); // ++
 		}
 		else if (*BufferPtr == '-' && *(BufferPtr + 1) == '-')

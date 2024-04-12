@@ -28,8 +28,8 @@ public:
         l_brace,       // {
         r_brace,       // }
         plus_equal,    // +=
-        plus_plus,   // ++
-        minus_minus, // --
+        plus_plus,     // ++
+        minus_minus,   // --
         minus_equal,   // -=
         star_equal,    // *=
         mod_equal,     // %=

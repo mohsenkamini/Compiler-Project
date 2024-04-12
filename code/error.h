@@ -15,7 +15,7 @@ public:
 	static void RightBraceExpected();
 	static void UnexpectedToken(Token::TokenKind);
 	static void VariableExpected();
-	static void InvalidDataForExpectedDataType();	
+	static void InvalidDataForExpectedDataType();
 	static void ExpressionExpected();
 	static void EqualExpected();
 };
