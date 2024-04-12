@@ -54,14 +54,48 @@ Base *Parser::parse()
                 AssignmentStatement *assign = parseUnaryExpression(current);
                 statements.push_back(assign);
             }
-
+            check_for_simicolon();
             break;
         }
+        case Token::KW_print:
+        {
+            advance();
+            if (!Tok.is(Token::l_paren))
+            {
+                Error::LeftParenthesisExpected();
+            }
+            advance();
+            // token should be identifier
+            if(!Tok.is(Token::identifier))
+            {
+                Error::VariableExpected();
+            }
+            string variable_to_be_printed = Tok.getText();
+            advance();
+            if (!Tok.is(Token::r_paren))
+            {
+                Error::RightParenthesisExpected();
+            }
+            advance();
+            check_for_simicolon();
+            PrintStatement *print_statement = new PrintStatement(variable_to_be_printed);
+            statements.push_back(print_statement);
+            break;
         }
         return Base(statements);
     }
     return new Base(statements);
 }
+
+void check_for_simicolon()
+{
+    if (!Tok.is(Token::semi_colon))
+    {
+        Error::SemiColonExpected();
+    }
+    advance();
+}
+
 Expression *Parser::parseUnaryExpression(Token& token)
 {
     if(Tok.is(Token::plus_plus))

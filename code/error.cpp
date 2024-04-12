@@ -53,3 +53,9 @@ void Error::UnexpectedToken(Token::TokenKind kind)
     cout << "Unexpected token: " << kind.getText() << "\n";
     exit(3);
 }
+
+void Error::SemiColonExpected()
+{
+    cout << "Semi colon expected: ';'\n";
+    exit(3);
+}

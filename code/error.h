@@ -18,6 +18,7 @@ public:
 	static void InvalidDataForExpectedDataType();
 	static void ExpressionExpected();
 	static void EqualExpected();
+	static void SemiColonExpected();
 };
 
 #endif

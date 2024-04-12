@@ -21,6 +21,7 @@ class ElseStatement;
 class AssignStatement;          // assignment statement like a = 3;
 class CommentStatement;
 class afterCheckStatement;
+class PrintStatement;
 
 // Base node that contains all the syntax nodes
 class Base : public AST
