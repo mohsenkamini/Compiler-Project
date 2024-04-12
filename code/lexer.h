@@ -40,6 +40,7 @@ public:
         comment,       // /*
         uncomment,     // */
         KW_int,        // int
+        KW_bool,       // bool
         KW_if,         // if
         KW_else,       // else
         KW_while,      // while
