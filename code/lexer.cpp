@@ -141,6 +141,12 @@ void Lexer::next(Token& token) {
 		else if (*BufferPtr == '>' && *(BufferPtr + 1) == '=') {      // >=
 			formToken(token, BufferPtr + 2, Token::greater_equal);
 		}
+		else if (*BufferPtr == '+' && *(BufferPtr + 1) == '+') {      // ++
+			formToken(token, BufferPtr + 2, Token::plus_plus);
+		}
+		else if (*BufferPtr == '-' && *(BufferPtr + 1) == '-' {      // --
+			formToken(token, BufferPtr + 2, Token::minus_minus);
+		}
 		else if (*BufferPtr == '=') {
 			formToken(token, BufferPtr + 1, Token::equal);
 		}

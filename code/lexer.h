@@ -26,6 +26,8 @@ public:
         l_paren,       // (
         r_paren,       // )
         plus_equal,    // +=
+        plus_plus,   // ++
+        minus_minus, // --
         minus_equal,   // -=
         star_equal,    // *=
         mod_equal,     // %=
