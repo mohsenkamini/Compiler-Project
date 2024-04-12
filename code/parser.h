@@ -41,10 +41,20 @@ class Parser
     // pattern specified. each one produces its own node
     // one node can have multiple subnodes inside it
 public:
-    Base *parseS();
+    Base *parse();
     Base *parseStatement();
     IfStatement *parseIf();
     ElseIfStatement *parseElseIf();
+    Expression *parseUnaryExpression(Token &token);
+    Expression *parseExpression();
+    Expression *parseLogicalExpression();
+    Expression *parseLogicalComparison();
+    Expression *parseLogicalTerm();
+    Expression *parseIntExpression();
+    Expression *parseTerm();
+    Expression *parsePower();
+    Expression *parseFactor();
+    AssignStatement *parseAssign(string name);
 
 public:
     // initializes all members and retrieves the first token
