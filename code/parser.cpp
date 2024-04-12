@@ -402,10 +402,70 @@ AssignStatement *Parser::parseAssign(string name)
 Base *Parser::parseStatement()
 {
     llvm::SmallVector<Statement *> statements;
+    bool isComment = false;
     while (!Tok.is(Token::r_brace) && !Tok.is(Token::eof))
     {
+        if(isComment)
+        {
+            if(Tok.is(Token::uncomment))
+            {
+                isComment = false;
+            }
+            advance();
+            continue;
+        }
+
         switch (Tok.getKind())
         {
+        case Token::KW_identifier:
+        {
+            string name = Tok.getText();
+            Token current = Tok;
+            advance();
+            if (!Tok.isOneOf(Token::plus_plus, Token::minus_minus))
+            {
+                AssignStatement *assign = parseAssign(name);
+                statements.push_back(assign);
+            }
+            else
+            {
+                AssignmentStatement *assign = parseUnaryExpression(current);
+                statements.push_back(assign);
+            }
+            check_for_simicolon();
+            break;
+        }
+        case Token::KW_print:
+        {
+            advance();
+            if (!Tok.is(Token::l_paren))
+            {
+                Error::LeftParenthesisExpected();
+            }
+            advance();
+            // token should be identifier
+            if(!Tok.is(Token::identifier))
+            {
+                Error::VariableExpected();
+            }
+            string variable_to_be_printed = Tok.getText();
+            advance();
+            if (!Tok.is(Token::r_paren))
+            {
+                Error::RightParenthesisExpected();
+            }
+            advance();
+            check_for_simicolon();
+            PrintStatement *print_statement = new PrintStatement(variable_to_be_printed);
+            statements.push_back(print_statement);
+            break;
+        }
+        case Token::comment:
+        {
+            isComment = true;
+            advance();
+            break;
+        }
         case Token::KW_if:
         {
             IfStatement *statement = parseIf();
