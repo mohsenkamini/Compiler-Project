@@ -25,6 +25,8 @@ public:
         power,         // ^
         l_paren,       // (
         r_paren,       // )
+        l_brace,       // {
+        r_brace,       // }
         plus_equal,    // +=
         plus_plus,   // ++
         minus_minus, // --
@@ -52,7 +54,7 @@ public:
         KW_true,       // true
         KW_false,      // false
         KW_print,      // print
-        eof           // end of file
+        eof            // end of file
     };
 
 private:

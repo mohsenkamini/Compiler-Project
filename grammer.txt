@@ -116,26 +116,16 @@ UnaryExp ->
 
 If ->
     "if" "(" logicalValue ")" "{" Block "}" |
-    "if" "(" logicalValue ")" "{" Block "}" Else |
-    "if" "(" logicalValue ")" "{" Block "}" ElseIf |
-    "if" "(" logicalValue ")" "{" Block "}" ElseIf Else |
+    "if" "(" logicalValue ")" "{" Block "}" Else
     
     "if" "(" logicalValue ")" "{" "}" |
     "if" "(" logicalValue ")" "{" "}" Else |
-    "if" "(" logicalValue ")" "{" "}" ElseIf |
-    "if" "(" logicalValue ")" "{" "}" ElseIf Else |
     
 
 Else ->
-    "else" "{" Block "}" | 
+    "else" If | 
+    "else" "{" Block "}" |
     "else" "{" "}"
-
-
-ElseIf ->
-    "else" "if" "(" logicalValue ")" "{" Block "}" |
-    "else" "if" "(" logicalValue ")" "{" Block "}" ElseIf |
-    "else" "if" "(" logicalValue ")" "{" "}" |
-    "else" "if" "(" logicalValue ")" "{" "}" ElseIf |
 
 
 While ->

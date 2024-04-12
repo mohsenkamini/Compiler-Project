@@ -42,6 +42,8 @@ class Parser
     // one node can have multiple subnodes inside it
 public:
     Base *parseS();
+    Base* parseStatement();
+    IfStatement *parseIf();
 
 public:
     // initializes all members and retrieves the first token
