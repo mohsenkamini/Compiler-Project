@@ -216,7 +216,8 @@ public:
         If,
         ElseIf,
         Else,
-        Print
+        Print,
+        StatementType
     };
 
 private:
