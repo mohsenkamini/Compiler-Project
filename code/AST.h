@@ -217,7 +217,8 @@ public:
         ElseIf,
         Else,
         Print,
-        Declaration
+        Declaration,
+        Assignment
     };
 
 private:
