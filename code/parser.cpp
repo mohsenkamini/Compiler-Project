@@ -501,7 +501,7 @@ IfStatement *Parser::parseIf()
     }
 
     advance();
-    Expression *condition = parseLogicalValue();
+    Expression *condition = parseLogicalTerm();
 
     if (!Tok.is(Token::r_paren))
     {
