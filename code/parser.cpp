@@ -107,7 +107,6 @@ Base *Parser::parse()
             statements.push_back(statement);
             break;
         }
-            return Base(statements);
         }
         return new Base(statements);
     }
