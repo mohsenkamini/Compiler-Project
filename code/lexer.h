@@ -39,6 +39,7 @@ public:
         equal,         // =
         equal_equal,   // ==
         not_equal,     // !=
+        not,           // !
         less,          // <
         less_equal,    // <=
         greater,       // >

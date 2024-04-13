@@ -32,7 +32,7 @@ namespace charinfo
 	LLVM_READNONE inline bool isSpecialCharacter(char c)
 	{
 		return c == ';' || c == ',' || c == '(' ||
-			   c == ')' || c == '{' || c == '}' c == ',';
+			   c == ')' || c == '{' || c == '}' ||  c == ',';
 	}
 }
 
@@ -76,10 +76,6 @@ void Lexer::next(Token &token)
 		else if (Context == "bool")
 		{
 			kind = Token::KW_bool;
-		}
-		else if (Context == "elif")
-		{
-			kind = Token::KW_elif;
 		}
 		else if (Context == "else")
 		{
@@ -133,7 +129,30 @@ void Lexer::next(Token &token)
 		formToken(token, end, Token::number);
 		return;
 	}
-
+	else if (charinfo::isSpecialCharacter(*BufferPtr))
+	{
+		switch (*BufferPtr)
+		{
+		case ';':
+			formToken(token, BufferPtr + 1, Token::semi_colon);
+			break;
+		case ',':
+			formToken(token, BufferPtr + 1, Token::comma);
+			break;
+		case '(':
+			formToken(token, BufferPtr + 1, Token::l_paren);
+			break;
+		case ')':
+			formToken(token, BufferPtr + 1, Token::r_paren);
+			break;
+		case '{':
+			formToken(token, BufferPtr + 1, Token::l_brace);
+			break;
+		case '}':
+			formToken(token, BufferPtr + 1, Token::r_brace);
+			break;
+		}
+	}
 	else
 	{
 
@@ -235,37 +254,12 @@ void Lexer::next(Token &token)
 		{
 			formToken(token, BufferPtr + 1, Token::mod); // %
 		}
-	}
-
-	else if (charinfo::isSpecialCharacter(*BufferPtr))
-	{
-		switch (*BufferPtr)
+		else
 		{
-		case ';':
-			formToken(token, BufferPtr + 1, Token::semi_colon);
-			break;
-		case ',':
-			formToken(token, BufferPtr + 1, Token::comma);
-			break;
-		case '(':
-			formToken(token, BufferPtr + 1, Token::l_paren);
-			break;
-		case ')':
-			formToken(token, BufferPtr + 1, Token::r_paren);
-			break;
-		case '{':
-			formToken(token, BufferPtr + 1, Token::l_brace);
-			break;
-		case '}':
-			formToken(token, BufferPtr + 1, Token::r_brace);
-			break;
+			formToken(token, BufferPtr + 1, Token::unknown);
 		}
 	}
 
-	else
-	{
-		formToken(token, BufferPtr + 1, Token::unknown);
-	}
 }
 
 void Lexer::formToken(Token &Tok, const char *TokEnd, Token::TokenKind Kind)
