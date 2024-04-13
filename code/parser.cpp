@@ -64,7 +64,7 @@ Base *Parser::parse()
             }
             else
             {
-                AssignmentStatement *assign = parseUnaryExpression(current);
+                AssignStatement *assign = parseUnaryExpression(current);
                 statements.push_back(assign);
             }
             check_for_semicolon();
@@ -437,7 +437,7 @@ Base *Parser::parseStatement()
             }
             else
             {
-                AssignmentStatement *assign = parseUnaryExpression(current);
+                AssignStatement *assign = parseUnaryExpression(current);
                 statements.push_back(assign);
             }
             check_for_semicolon();
