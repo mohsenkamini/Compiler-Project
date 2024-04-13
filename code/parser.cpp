@@ -105,6 +105,12 @@ Base *Parser::parse()
             statements.push_back(statement);
             break;
         }
+        case Token::KW_while:
+        {
+            LoopStatement *statement = parseWhile();
+            statements.push_back(statement);
+            break;
+        }
             return Base(statements);
         }
         return new Base(statements);
@@ -580,4 +586,54 @@ ElseIfStatement *Parser::parseElseIf()
     advance();
 
     return new ElseIfStatement(condition, allIfStatements->getStatements(), Statement::StatementType::ElseIf);
+}
+
+LoopStatement *Parser::parseWhile()
+{
+    advance();
+    if (!Tok.is(Token::l_paren))
+    {
+        Error::LeftParenthesisExpected();
+    }
+
+    advance();
+    Expression *condition = parseLogicalValue();
+
+    if (!Tok.is(Token::r_paren))
+    {
+        Error::RightParenthesisExpected();
+    }
+
+    advance();
+    if (Tok.is(Token::l_brace))
+    {
+        advance();
+        Base *allWhileStatements = parseStatement();
+        if(!consume(Token::r_brace))
+        {
+            return new LoopStatement(condition, allWhileStatements->getStatements(), Statement::StateMentType::Loop);
+        }
+        else
+		{
+			Error::RightBraceExpected();
+		}
+
+    }
+    else{
+        Error::LeftBraceExpected();
+    }
+    advance();
+}
+
+LoopStatement *Parser::parseFor()
+{
+    advence();
+    if (!Tok.is(Token::l_paren))
+    {
+        Error::LeftParenthesisExpected();
+    }
+    advance();
+    
+
+
 }
