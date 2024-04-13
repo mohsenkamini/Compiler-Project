@@ -19,10 +19,10 @@ llvm_map_components_to_libnames(llvm_libs Core)
 
 if(LLVM_COMPILER_IS_GCC_COMPATIBLE)
   if(NOT LLVM_ENABLE_RTTI)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fexceptions")
   endif()
   if(NOT LLVM_ENABLE_EH)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fexceptions")
   endif()
 endif()
 
