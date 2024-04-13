@@ -119,9 +119,24 @@ namespace
             // TODO: While and For
         };
 
-        virtual void visit(BooleanOp &Node) override{
-            // TODO: Implement
-
+        virtual void visit(BooleanOp &Node) override
+        {
+            if (Node.getLeft())
+            {
+                Node.getLeft()->accept(*this);
+            }
+            else
+            {
+                HasError = true;
+            }
+            if (Node.getRight())
+            {
+                Node.getRight()->accept(*this);
+            }
+            else
+            {
+                HasError = true;
+            }
         };
 
         virtual void visit(Expression &Node) override{
