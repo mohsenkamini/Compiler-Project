@@ -217,7 +217,7 @@ public:
         ElseIf,
         Else,
         Print,
-        StatementType
+        Declaration
     };
 
 private:
