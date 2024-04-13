@@ -67,7 +67,7 @@ Base *Parser::parse()
                 AssignStatement *assign = parseUnaryExpression(current);
                 statements.push_back(assign);
             }
-            check_for_semicolon();
+            Parser::check_for_semicolon();
             break;
         }
         case Token::KW_print:
@@ -90,7 +90,7 @@ Base *Parser::parse()
                 Error::RightParenthesisExpected();
             }
             advance();
-            check_for_semicolon();
+            Parser::check_for_semicolon();
             PrintStatement *print_statement = new PrintStatement(variable_to_be_printed);
             statements.push_back(print_statement);
             break;
@@ -112,7 +112,7 @@ Base *Parser::parse()
     }
 }
 
-void check_for_semicolon()
+void Parser::check_for_semicolon()
 {
     if (!Tok.is(Token::semi_colon))
     {
@@ -443,7 +443,7 @@ Base *Parser::parseStatement()
                 AssignStatement *assign = parseUnaryExpression(current);
                 statements.push_back(assign);
             }
-            check_for_semicolon();
+            Parser::check_for_semicolon();
             break;
         }
         case Token::KW_print:
@@ -466,7 +466,7 @@ Base *Parser::parseStatement()
                 Error::RightParenthesisExpected();
             }
             advance();
-            check_for_semicolon();
+            Parser::check_for_semicolon();
             PrintStatement *print_statement = new PrintStatement(tok);
             statements.push_back(print_statement);
             break;
