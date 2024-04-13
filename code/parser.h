@@ -66,7 +66,6 @@ public:
     // get the value of error flag
     bool hasError() { return HasError; }
 
-    Base *parse();
 };
 
 #endif
