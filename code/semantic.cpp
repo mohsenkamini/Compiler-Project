@@ -54,8 +54,34 @@ namespace
             declaration->accept(*this);
         };
 
-        virtual void visit(BinaryOp &Node) override{
-            // TODO: Implement
+        virtual void visit(BinaryOp &Node) override
+        {
+            if (Node.getLeft())
+            {
+                Node.getLeft()->accept(*this);
+            }
+            else
+            {
+                HasError = true;
+            }
+            if (Node.getRight())
+            {
+                Node.getRight()->accept(*this);
+            }
+            else
+            {
+                HasError = true;
+            }
+
+            // Divide by zero check
+            if (Node.getOperator() == BinaryOp::Operator::Div)
+            {
+                Expression *right = (Expression *)Node.getRight();
+                if (right->isNumber() && right->getNumber() == 0)
+                {
+                    error(DivByZero, ((Expression *)Node.getLeft())->getValue());
+                }
+            }
         };
 
         virtual void visit(Statement &Node) override
