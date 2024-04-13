@@ -54,7 +54,7 @@ Base *Parser::parse()
         }
         case Token::identifier:
         {
-            string name = Tok.getText();
+            llvm::StringRef name = Tok.getText();
             Token current = Tok;
             advance();
             if (!Tok.isOneOf(Token::plus_plus, Token::minus_minus))
@@ -83,7 +83,7 @@ Base *Parser::parse()
             {
                 Error::VariableExpected();
             }
-            string variable_to_be_printed = Tok.getText();
+            llvm::StringRef variable_to_be_printed = Tok.getText();
             advance();
             if (!Tok.is(Token::r_paren))
             {
@@ -155,7 +155,7 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine()
     llvm::SmallVector<DecStatement *> states;
     while (!Tok.is(Token::semi_colon))
     {
-        string name;
+        llvm::StringRef name;
         Expression *value = nullptr;
         if (Tok.is(Token::identifier))
         {
@@ -390,9 +390,9 @@ Expression *Parser::parseFactor()
     return Res;
 }
 
-AssignStatement *Parser::parseAssign(string name)
+AssignStatement *Parser::parseAssign(llvm::StringRef name)
 {
-    string name;
+    llvm::StringRef name;
     Expression *value = nullptr;
     if (Tok.is(Token::equal))
     {
@@ -427,7 +427,7 @@ Base *Parser::parseStatement()
         {
         case Token::identifier:
         {
-            string name = Tok.getText();
+            llvm::StringRef name = Tok.getText();
             Token current = Tok;
             advance();
             if (!Tok.isOneOf(Token::plus_plus, Token::minus_minus))
@@ -456,7 +456,7 @@ Base *Parser::parseStatement()
             {
                 Error::VariableExpected();
             }
-            string variable_to_be_printed = Tok.getText();
+            llvm::StringRef variable_to_be_printed = Tok.getText();
             advance();
             if (!Tok.is(Token::r_paren))
             {
