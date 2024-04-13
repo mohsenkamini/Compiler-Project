@@ -57,6 +57,7 @@ public:
     Expression *parseFactor();
     AssignStatement *parseAssign(llvm::StringRef name);
     llvm::SmallVector<DecStatement *> parseDefine();
+    void check_for_semicolon();
 
 public:
     // initializes all members and retrieves the first token
