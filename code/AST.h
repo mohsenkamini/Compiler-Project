@@ -249,7 +249,7 @@ class PrintStatement : public Statement
     {
         V.visit(*this);
     }
-} 
+};
 
 
 class DecStatement : public Statement {
@@ -299,7 +299,7 @@ public:
 	{
 		V.visit(*this);
 	}
-}
+};
 
 class IfStatement : public Statement
 {
