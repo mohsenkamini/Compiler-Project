@@ -543,7 +543,7 @@ IfStatement *Parser::parseIf()
                 Error::RightBraceExpected();
             }
             advance();
-            elseStatement = new ElseStatement(allElseStatements, Statement::StatementType::Else);
+            elseStatement = new ElseStatement(allElseStatements->getStatements(), Statement::StatementType::Else);
             hasElse = true;
             break;
         }
