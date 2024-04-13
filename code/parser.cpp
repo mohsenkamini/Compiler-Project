@@ -187,7 +187,7 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine()
         {
             Error::VariableExpected();
         }
-        DecStatement *state = new DecStatement(name, value);
+        DecStatement *state = new DecStatement(new Expression(name), value);
         states.push_back(state);
     }
     return states;
