@@ -247,7 +247,7 @@ Expression *Parser::parseLogicalExpression()
 Expression *Parser::parseLogicalComparison()
 {
     Expression *left = parseLogicalTerm();
-    while (Tok.isOneOf(Token::equal_equal, Token::not_equal, token::less, token::less_equal, token::greater, token::greater_equal))
+    while (Tok.isOneOf(Token::equal_equal, Token::not_equal, Token::less, Token::less_equal, Token::greater, Token::greater_equal))
     {
         BooleanOp::Operator Op;
         switch (Tok.getKind())
