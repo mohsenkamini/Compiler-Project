@@ -248,7 +248,7 @@ void Lexer::next(Token &token)
 		}
 		else if (*BufferPtr == '!')
 		{
-			formToken(token, BufferPtr + 1, Token::not ); // !
+			formToken(token, BufferPtr + 1, Token::KW_not ); // !
 		}
 		else if (*BufferPtr == '%')
 		{

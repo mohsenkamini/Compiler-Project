@@ -39,7 +39,7 @@ public:
         equal,         // =
         equal_equal,   // ==
         not_equal,     // !=
-        not,           // !
+        KW_not,           // !
         less,          // <
         less_equal,    // <=
         greater,       // >
