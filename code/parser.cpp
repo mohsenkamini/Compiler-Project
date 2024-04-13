@@ -108,8 +108,9 @@ Base *Parser::parse()
             break;
         }
         }
-        return new Base(statements);
+        
     }
+    return new Base(statements);
 }
 
 void Parser::check_for_semicolon()
