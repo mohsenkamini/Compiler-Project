@@ -122,14 +122,16 @@ void check_for_semicolon()
     advance();
 }
 
-Expression *Parser::parseUnaryExpression(Token &token)
+AssignStatement *Parser::parseUnaryExpression(Token &token)
 {
     if (Tok.is(Token::plus_plus))
     {
         advance();
         if (token.is(Token::identifier))
         {
-            return new BinaryOp(BinaryOp::Plus, tok, 1);
+            Expression *tok = new Expression(token.getText());
+            Expression *one = new Expression(1);
+            return new AssignStatement(tok.getText(), new BinaryOp(BinaryOp::Plus, tok, one));
         }
         else
         {
@@ -141,7 +143,9 @@ Expression *Parser::parseUnaryExpression(Token &token)
         advance();
         if (token.is(Token::identifier))
         {
-            return new BinaryOp(BinaryOp::Minus, tok, 1);
+            Expression *tok = new Expression(token.getText());
+            Expression *one = new Expression(1);
+            return new AssignStatement(tok.getText(), new BinaryOp(BinaryOp::Minus, tok, 1));
         }
         else
         {
