@@ -20,6 +20,25 @@ class AssignStatement;          // assignment statement like a = 3;
 // class afterCheckStatement;
 
 
+class ASTVisitor
+{
+public:
+	// Virtual visit functions for each AST node type
+	virtual void visit(AST&) {}
+	virtual void visit(Expression&) {}
+	virtual void visit(Base&) = 0;
+	virtual void visit(Statement&) = 0;
+	virtual void visit(BinaryOp&) = 0;
+	virtual void visit(DecStatement&) = 0;
+	virtual void visit(AssignStatement&) = 0;
+	virtual void visit(BooleanOp&) = 0;
+	virtual void visit(IfStatement&) = 0;
+	virtual void visit(ElseIfStatement&) = 0;
+	virtual void visit(ElseStatement&) = 0;
+    virtual void visit(PrintStatement&) = 0;
+	// virtual void visit(LoopStatement&) = 0;
+};
+
 class AST {
 public:
 	virtual ~AST() {}
