@@ -373,7 +373,7 @@ Expression *Parser::parseFactor()
         advance();
         break;
     }
-    case Token::ident:
+    case Token::identifier:
     {
         Res = new Expression(Tok.getText());
         advance();
