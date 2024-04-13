@@ -11,21 +11,21 @@ namespace
 
         enum ErrorType
         {
-            Twice,
-            Not,
-            DivByZero
+            AlreadyDefinedVariable,
+            Not, // TODO: Change this name to: NotDefinedVariable
+            DivideByZero
         };
 
-        void error(ErrorType ET, llvm::StringRef V)
+        void error(ErrorType errorType, llvm::StringRef V)
         {
-            if (ET == ErrorType::DivByZero)
+            if (errorType == ErrorType::DivideByZero)
             {
                 llvm::errs() << "Division by zero is not allowed."
                              << "\n";
             }
             else
             {
-                llvm::errs() << "Variable " << V << " is " << (ET == Twice ? "already" : "not") << " declared!\n";
+                llvm::errs() << "Variable " << V << " is " << (errorType == AlreadyDefinedVariable ? "already" : "not") << " declared!\n";
             }
             HasError = true;
             exit(3);
@@ -79,7 +79,7 @@ namespace
                 Expression *right = (Expression *)Node.getRight();
                 if (right->isNumber() && right->getNumber() == 0)
                 {
-                    error(DivByZero, ((Expression *)Node.getLeft())->getValue());
+                    error(DivideByZero, ((Expression *)Node.getLeft())->getValue());
                 }
             }
         };
