@@ -143,8 +143,14 @@ namespace
             // TODO: Implement
         };
 
-        virtual void visit(DecStatement &Node) override{
-            // TODO: Implement
+        virtual void visit(DecStatement &Node) override
+        {
+            auto I = (Node.getLValue());
+            if (!Scope.insert(Node.getLValue()->getValue()).second) {
+                error(AlreadyDefinedVariable, Node.getLValue()->getValue());
+            }
+            Expression *declaration = (Expression *)Node.getRValue();
+            declaration->accept(*this);
         };
 
         virtual void visit(IfStatement &Node) override
