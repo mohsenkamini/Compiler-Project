@@ -407,7 +407,7 @@ AssignStatement *Parser::parseAssign(llvm::StringRef name)
     {
         Error::EqualExpected();
     }
-    return new AssignStatement(name, value);
+    return new AssignStatement(new Expression(name), value);
 }
 
 Base *Parser::parseStatement()
