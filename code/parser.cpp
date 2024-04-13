@@ -124,6 +124,7 @@ void Parser::check_for_semicolon()
 
 AssignStatement *Parser::parseUnaryExpression(Token &token)
 {
+    AssignStatement* res;
     if (Tok.is(Token::plus_plus))
     {
         advance();
@@ -131,7 +132,7 @@ AssignStatement *Parser::parseUnaryExpression(Token &token)
         {
             Expression *tok = new Expression(token.getText());
             Expression *one = new Expression(1);
-            return new AssignStatement(tok, new BinaryOp(BinaryOp::Plus, tok, one));
+            res = new AssignStatement(tok, new BinaryOp(BinaryOp::Plus, tok, one));
         }
         else
         {
@@ -145,13 +146,14 @@ AssignStatement *Parser::parseUnaryExpression(Token &token)
         {
             Expression *tok = new Expression(token.getText());
             Expression *one = new Expression(1);
-            return new AssignStatement(tok, new BinaryOp(BinaryOp::Minus, tok, one));
+            res = new AssignStatement(tok, new BinaryOp(BinaryOp::Minus, tok, one));
         }
         else
         {
             Error::VariableExpected();
         }
     }
+    return res;
 }
 llvm::SmallVector<DecStatement *> Parser::parseDefine()
 {
