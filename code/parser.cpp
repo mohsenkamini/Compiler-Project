@@ -3,7 +3,7 @@
 #include "parser.h"
 #include "error.h"
 #include <string>
-using namspace std;
+using namespace std;
 #endif
 
 Base *Parser::parse()
@@ -26,7 +26,7 @@ Base *Parser::parse()
         {
         case Token::KW_int:
         {
-            llvm::SmallVector<DecStatement *> states = parseDefine();
+            llvm::SmallVector<DecStatement *> states = Parser::parseDefine();
             if (states.size() == 0)
             {
                 return nullptr;
@@ -40,7 +40,7 @@ Base *Parser::parse()
         }
         case Token::KW_bool:
         {
-            llvm::SmallVector<DecStatement *> states = parseDefine();
+            llvm::SmallVector<DecStatement *> states = Parser::parseDefine();
             if (states.size() == 0)
             {
                 return nullptr;
