@@ -382,7 +382,7 @@ Expression *Parser::parseFactor()
     case Token::l_paren:
     {
         advance();
-        Res = parseExpr();
+        Res = parseExpression();
         if (!consume(Token::r_paren))
             break;
     }
