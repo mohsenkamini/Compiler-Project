@@ -316,18 +316,19 @@ Expression *Parser::parseLogicalTerm()
     return Res;
 }
 
-BinaryOp *Parser::parseIntExpression()
+Expression *Parser::parseIntExpression()
 {
     Expression *Left = parseTerm();
+    Expression *res;
     while (Tok.isOneOf(Token::plus, Token::minus))
     {
         BinaryOp::Operator Op =
             Tok.is(Token::plus) ? BinaryOp::Plus : BinaryOp::Minus;
         advance();
         Expression *Right = parseTerm();
-        Left = new BinaryOp(Op, Left, Right);
+        res = new BinaryOp(Op, Left, Right);
     }
-    return left;
+    return res;
 }
 
 Expression *Parser::parseTerm()
