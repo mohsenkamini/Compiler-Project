@@ -4,6 +4,8 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/InitLLVM.h"
 #include "llvm/Support/raw_ostream.h"
+#include <string>
+
 
 class AST;                      // Abstract Syntax Tree
 class Base;                     // top level program

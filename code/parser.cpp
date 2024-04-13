@@ -2,6 +2,7 @@
 #define PARSER_H
 #include "parser.h"
 #include "error.h"
+#include <string>
 #endif
 
 Base *Parser::parse()

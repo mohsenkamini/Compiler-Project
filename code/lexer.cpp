@@ -1,4 +1,6 @@
 #include "lexer.h"
+#include <string>
+
 
 namespace charinfo
 {

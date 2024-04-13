@@ -1,4 +1,5 @@
 #include "error.h"
+#include <string>
 
 void Error::VariableExpected()
 {

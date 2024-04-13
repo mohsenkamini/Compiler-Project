@@ -2,6 +2,7 @@
 #define ERROR_H
 
 #include <iostream>
+#include <string>
 #include "lexer.h"
 using namespace std;
 
