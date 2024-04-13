@@ -396,7 +396,6 @@ Expression *Parser::parseFactor()
 
 AssignStatement *Parser::parseAssign(llvm::StringRef name)
 {
-    llvm::StringRef name;
     Expression *value = nullptr;
     if (Tok.is(Token::equal))
     {
