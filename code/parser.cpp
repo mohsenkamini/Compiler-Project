@@ -144,7 +144,7 @@ AssignStatement *Parser::parseUnaryExpression(Token &token)
         {
             Expression *tok = new Expression(token.getText());
             Expression *one = new Expression(1);
-            return new AssignStatement(tok, new BinaryOp(BinaryOp::Minus, tok, 1));
+            return new AssignStatement(tok, new BinaryOp(BinaryOp::Minus, tok, one));
         }
         else
         {
