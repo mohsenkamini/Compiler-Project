@@ -48,8 +48,10 @@ namespace
             // TODO: Implement
         };
 
-        virtual void visit(PrintStatement &Node) override{
-            // TODO: Implement
+        virtual void visit(PrintStatement &Node) override
+        {
+            Expression *declaration = (Expression *)Node.getIdentifier();
+            declaration->accept(*this);
         };
 
         virtual void visit(BinaryOp &Node) override{
@@ -81,6 +83,11 @@ namespace
             else if (Node.getKind() == Statement::StatementType::Else)
             {
                 ElseStatement *declaration = (ElseStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::Print)
+            {
+                Print *declaration = (Print *)&Node;
                 declaration->accept(*this);
             }
             // TODO: While and For
