@@ -257,11 +257,11 @@ private:
 
 	Expression* lvalue;
 	Expression* rvalue;
-	Statement::StateMentType type;
+	Statement::StatementType type;
 
 public:
-	DecStatement(Expression* lvalue, Expression* rvalue) : lvalue(lvalue), rvalue(rvalue), type(Statement::StateMentType::Declaration), Statement(type) { }
-	DecStatement(Expression* lvalue) : lvalue(lvalue), rvalue(rvalue), type(Statement::StateMentType::Declaration), Statement(type) { rvalue = new Expression(0); }
+	DecStatement(Expression* lvalue, Expression* rvalue) : lvalue(lvalue), rvalue(rvalue), type(Statement::StatementType::Declaration), Statement(type) { }
+	DecStatement(Expression* lvalue) : lvalue(lvalue), rvalue(rvalue), type(Statement::StatementType::Declaration), Statement(type) { rvalue = new Expression(0); }
 
 	Expression* getLValue() {
 		return lvalue;
@@ -283,10 +283,10 @@ private:
 
 	Expression* lvalue;
 	Expression* rvalue;
-	Statement::StateMentType type;
+	Statement::StatementType type;
 
 public:
-	AssignStatement(Expression* lvalue, Expression* rvalue) : lvalue(lvalue), rvalue(rvalue), type(Statement::StateMentType::Assignment), Statement(type) { }
+	AssignStatement(Expression* lvalue, Expression* rvalue) : lvalue(lvalue), rvalue(rvalue), type(Statement::StatementType::Assignment), Statement(type) { }
 	Expression* getLValue() {
 		return lvalue;
 	}
