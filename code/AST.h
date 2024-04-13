@@ -397,7 +397,7 @@ private:
     llvm::SmallVector<Statement *> statements;
 
 public:
-    ElseStatement(llvm::SmallVector<Statement *> statements, StatementType type) : statements(statements), Statement(type) {}
+    ElseStatement(llvm::SmallVector<Statement *> statements, Statement::StatementType type) : statements(statements), Statement(type) {}
 
     llvm::SmallVector<Statement *> getStatements()
     {
