@@ -12,7 +12,7 @@ namespace
         enum ErrorType
         {
             AlreadyDefinedVariable,
-            Not, // TODO: Change this name to: NotDefinedVariable
+            NotDefinedVariable,
             DivideByZero
         };
 
@@ -146,7 +146,8 @@ namespace
         virtual void visit(DecStatement &Node) override
         {
             auto I = (Node.getLValue());
-            if (!Scope.insert(Node.getLValue()->getValue()).second) {
+            if (!Scope.insert(Node.getLValue()->getValue()).second)
+            {
                 error(AlreadyDefinedVariable, Node.getLValue()->getValue());
             }
             Expression *declaration = (Expression *)Node.getRValue();
@@ -189,9 +190,15 @@ namespace
 
         };
 
-        virtual void visit(AssignStatement &Node) override{
-            // TODO: Implement
-
+        virtual void visit(AssignStatement &Node) override
+        {
+            auto I = (Node.getLValue());
+            if (!Scope.count(Node.getLValue()->getValue()))
+            {
+                error(NotDefinedVariable, Node.getLValue()->getValue());
+            }
+            Expression *declaration = (Expression *)Node.getRValue();
+            declaration->accept(*this);
         };
 
         virtual void visit(CommentStatement &Node) override{
