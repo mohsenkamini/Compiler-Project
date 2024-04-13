@@ -1,7 +1,7 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 #include "AST.h"
-#include "lexer.h"
+#include "Lexer.h"
 #include "llvm/Support/raw_ostream.h"
 #include <string>
 using namespace std;

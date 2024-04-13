@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include "lexer.h"
+#include "Lexer.h"
 using namespace std;
 
 class Error

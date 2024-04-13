@@ -1,7 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
-#include "error.h"
-#include "parser.h"
+#include "Error.h"
+#include "Parser.h"
 #include <string>
 using namespace std;
 #endif
