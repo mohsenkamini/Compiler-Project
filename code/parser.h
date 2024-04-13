@@ -1,9 +1,13 @@
 #ifndef _PARSER_H
 #define _PARSER_H
-#include <string>
 #include "AST.h"
 #include "lexer.h"
 #include "llvm/Support/raw_ostream.h"
+
+
+
+
+#include <string>
 class Parser
 {
     Lexer &Lex;
