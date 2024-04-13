@@ -5,6 +5,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <iostream>
 #include "AST.h"
+#include <string>
 // #include "CodeGen.h"
 #include "parser.h"
 // #include "Sema.h"
