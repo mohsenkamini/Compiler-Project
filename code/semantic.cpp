@@ -36,8 +36,12 @@ namespace
 
         bool hasError() { return HasError; }
 
-        virtual void visit(Base &Node) override{
-            // TODO: Implement
+        virtual void visit(Base &Node) override
+        {
+            for (auto I = Node.begin(), E = Node.end(); I != E; ++I)
+            {
+                (*I)->accept(*this);
+            }
         };
 
         virtual void visit(Unary &Node) override{
@@ -52,9 +56,34 @@ namespace
             // TODO: Implement
         };
 
-        virtual void visit(Statement &Node) override{
-            // TODO: Implement
-
+        virtual void visit(Statement &Node) override
+        {
+            if (Node.getKind() == Statement::StatementType::Declaration)
+            {
+                DecStatement *declaration = (DecStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::Assignment)
+            {
+                AssignStatement *declaration = (AssignStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::If)
+            {
+                IfStatement *declaration = (IfStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::ElseIf)
+            {
+                ElseIfStatement *declaration = (ElseIfStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::Else)
+            {
+                ElseStatement *declaration = (ElseStatement *)&Node;
+                declaration->accept(*this);
+            }
+            // TODO: While and For
         };
 
         virtual void visit(BooleanOp &Node) override{
@@ -72,7 +101,6 @@ namespace
 
         virtual void visit(IfStatement &Node) override
         {
-
             Expression *declaration = (Expression *)Node.getCondition();
             declaration->accept(*this);
             llvm::SmallVector<Statement *> stmts = Node.getStatements();
@@ -82,9 +110,8 @@ namespace
             }
         };
 
-        virtual void visit(ElifStatement &Node) override
+        virtual void visit(ElseIfStatement &Node) override
         {
-
             Expression *declaration = (Expression *)Node.getCondition();
             declaration->accept(*this);
             llvm::SmallVector<Statement *> stmts = Node.getStatements();
@@ -96,7 +123,6 @@ namespace
 
         virtual void visit(ElseStatement &Node) override
         {
-
             llvm::SmallVector<Statement *> stmts = Node.getStatements();
             for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
             {
