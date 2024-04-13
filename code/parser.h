@@ -2,7 +2,7 @@
 #define _PARSER_H
 
 #include "AST.h"
-#include "Lexer.h"
+#include "lexer.h"
 #include "llvm/Support/raw_ostream.h"
 
 class Parser
