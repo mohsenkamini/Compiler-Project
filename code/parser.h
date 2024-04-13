@@ -56,7 +56,7 @@ public:
     Expression *parsePower();
     Expression *parseFactor();
     AssignStatement *parseAssign(string name);
-    llvm::SmallVector<DecStatement *> Parser::parseDefine();
+    llvm::SmallVector<DecStatement *> parseDefine();
 
 public:
     // initializes all members and retrieves the first token
