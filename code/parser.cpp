@@ -83,7 +83,7 @@ Base *Parser::parse()
             {
                 Error::VariableExpected();
             }
-             variable_to_be_printed = Tok.getText();
+            Expression *variable_to_be_printed = new Expression(Tok.getText());
             advance();
             if (!Tok.is(Token::r_paren))
             {
