@@ -55,7 +55,7 @@ public:
     Expression *parseTerm();
     Expression *parsePower();
     Expression *parseFactor();
-    AssignStatement *parseAssign(string name);
+    AssignStatement *parseAssign(llvm::StringRef name);
     llvm::SmallVector<DecStatement *> parseDefine();
 
 public:
