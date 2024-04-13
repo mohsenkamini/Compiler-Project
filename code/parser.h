@@ -46,7 +46,7 @@ public:
     Base *parseStatement();
     IfStatement *parseIf();
     ElseIfStatement *parseElseIf();
-    Expression *parseUnaryExpression(Token &token);
+    AssignStatement *parseUnaryExpression(Token &token);
     Expression *parseExpression();
     Expression *parseLogicalExpression();
     Expression *parseLogicalComparison();
