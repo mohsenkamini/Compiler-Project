@@ -243,7 +243,8 @@ class PrintStatement : public Statement
     private:
     Expression * identifier;
     public:
-    PrintStatement(Expression * identifier, StatementType type) : identifier(identifier), Statement(type) {}
+    // contructor that sets type
+    PrintStatement(Expression * identifier) : identifier(identifier), Statement(Statement::StatementType::Print) {}
     Expression * getIdentifier()
     {
         return identifier;

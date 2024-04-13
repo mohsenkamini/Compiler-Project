@@ -83,7 +83,7 @@ Base *Parser::parse()
             {
                 Error::VariableExpected();
             }
-            llvm::StringRef variable_to_be_printed = Tok.getText();
+             variable_to_be_printed = Tok.getText();
             advance();
             if (!Tok.is(Token::r_paren))
             {
@@ -460,7 +460,7 @@ Base *Parser::parseStatement()
             {
                 Error::VariableExpected();
             }
-            llvm::StringRef variable_to_be_printed = Tok.getText();
+            Expression *tok = new Expression(Tok.getText());
             advance();
             if (!Tok.is(Token::r_paren))
             {
@@ -468,7 +468,7 @@ Base *Parser::parseStatement()
             }
             advance();
             check_for_semicolon();
-            PrintStatement *print_statement = new PrintStatement(variable_to_be_printed);
+            PrintStatement *print_statement = new PrintStatement(tok);
             statements.push_back(print_statement);
             break;
         }
