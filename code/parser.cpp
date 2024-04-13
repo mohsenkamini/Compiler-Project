@@ -316,7 +316,7 @@ Expression *Parser::parseLogicalTerm()
     return Res;
 }
 
-Expression *Parser::parseIntExpression()
+BinaryOp *Parser::parseIntExpression()
 {
     Expression *Left = parseTerm();
     while (Tok.isOneOf(Token::plus, Token::minus))
