@@ -3,6 +3,7 @@
 #include "parser.h"
 #include "error.h"
 #include <string>
+using namspace std;
 #endif
 
 Base *Parser::parse()

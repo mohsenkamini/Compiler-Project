@@ -3,11 +3,9 @@
 #include "AST.h"
 #include "lexer.h"
 #include "llvm/Support/raw_ostream.h"
-
-
-
-
 #include <string>
+using namespace std;
+
 class Parser
 {
     Lexer &Lex;
