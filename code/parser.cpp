@@ -52,7 +52,7 @@ Base *Parser::parse()
             }
             break;
         }
-        case Token::KW_identifier:
+        case Token::identifier:
         {
             string name = Tok.getText();
             Token current = Tok;
@@ -425,7 +425,7 @@ Base *Parser::parseStatement()
 
         switch (Tok.getKind())
         {
-        case Token::KW_identifier:
+        case Token::identifier:
         {
             string name = Tok.getText();
             Token current = Tok;
