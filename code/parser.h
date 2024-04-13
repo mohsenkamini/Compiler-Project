@@ -4,7 +4,7 @@
 #include "AST.h"
 #include "lexer.h"
 #include "llvm/Support/raw_ostream.h"
-
+#include <string>
 class Parser
 {
     Lexer &Lex;
