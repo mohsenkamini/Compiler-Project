@@ -60,3 +60,9 @@ void Error::SemiColonExpected()
     cout << "Semi colon expected: ';'\n";
     exit(3);
 }
+
+void Error::NumberVariableExpected()
+{
+    cout << "Number or variable expected\n";
+    exit(3);
+}

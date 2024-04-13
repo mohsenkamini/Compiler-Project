@@ -20,6 +20,7 @@ public:
 	static void ExpressionExpected();
 	static void EqualExpected();
 	static void SemiColonExpected();
+	static void NumberVariableExpected();
 };
 
 #endif
