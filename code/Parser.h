@@ -56,7 +56,7 @@ public:
     Expression *parsePower();
     Expression *parseFactor();
     AssignStatement *parseAssign(llvm::StringRef name);
-    llvm::SmallVector<DecStatement *> parseDefine();
+    llvm::SmallVector<DecStatement *> parseDefine(Token::TokenKind token_kind);
     void check_for_semicolon();
 
 public:
