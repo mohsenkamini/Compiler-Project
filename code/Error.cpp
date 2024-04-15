@@ -51,9 +51,9 @@ void Error::RightBraceExpected()
     exit(3);
 }
 
-void Error::UnexpectedToken(Token::TokenKind &kind)
+void Error::UnexpectedToken(Token::TokenKind &token)
 {
-    cout << "Unexpected token: " << kind.getText() << "\n";
+    cout << "Unexpected token: " << token.getText() << "\n";
     exit(3);
 }
 
