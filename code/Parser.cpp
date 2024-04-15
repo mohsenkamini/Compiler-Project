@@ -26,7 +26,7 @@ Base *Parser::parse()
         {
         case Token::KW_int:
         {
-            llvm::SmallVector<DecStatement *> states = Parser::parseDefine();
+            llvm::SmallVector<DecStatement *> states = Parser::parseDefine(Token::KW_int);
             if (states.size() == 0)
             {
                 return nullptr;
@@ -40,7 +40,7 @@ Base *Parser::parse()
         }
         case Token::KW_bool:
         {
-            llvm::SmallVector<DecStatement *> states = Parser::parseDefine();
+            llvm::SmallVector<DecStatement *> states = Parser::parseDefine(Token::KW_bool);
             if (states.size() == 0)
             {
                 return nullptr;
@@ -155,7 +155,7 @@ AssignStatement *Parser::parseUnaryExpression(Token &token)
     }
     return res;
 }
-llvm::SmallVector<DecStatement *> Parser::parseDefine()
+llvm::SmallVector<DecStatement *> Parser::parseDefine(Token::TokenKind token_kind)
 {
     advance();
     llvm::SmallVector<DecStatement *> states;
@@ -190,7 +190,12 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine()
         {
             Error::VariableExpected();
         }
-        DecStatement *state = new DecStatement(new Expression(name), value);
+        if(token_kind == Token::KW_int){
+            DecStatement *state = new DecStatement(new Expression(name), value, DecStatement::DecStatementType::Number);
+        }else{
+            DecStatement *state = new DecStatement(new Expression(name), value, DecStatement::DecStatementType::Boolean);
+        }
+        
         states.push_back(state);
     }
     return states;
