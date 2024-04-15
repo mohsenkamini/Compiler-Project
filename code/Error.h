@@ -14,7 +14,7 @@ public:
 	static void RightParenthesisExpected();
 	static void LeftBraceExpected();
 	static void RightBraceExpected();
-	static void UnexpectedToken(Token::TokenKind&);
+	static void UnexpectedToken(Token::TokenKind& token);
 	static void VariableExpected();
 	static void InvalidDataForExpectedDataType();
 	static void ExpressionExpected();
