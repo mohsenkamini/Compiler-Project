@@ -257,6 +257,11 @@ class PrintStatement : public Statement
 
 
 class DecStatement : public Statement {
+public:
+	enum DecStatementType {
+		Number,
+		Boolean,
+	};
 private:
 
 	Expression* lvalue;
@@ -265,10 +270,6 @@ private:
 	DecStatement::DecStatementType dec_type;
 
 public:
-	enum DecStatementType {
-		Number,
-		Boolean,
-	};
 	DecStatement(Expression* lvalue, Expression* rvalue) : lvalue(lvalue), rvalue(rvalue), type(Statement::StatementType::Declaration), Statement(type) { }
 	DecStatement(Expression* lvalue) : lvalue(lvalue), rvalue(rvalue), type(Statement::StatementType::Declaration), Statement(type) { rvalue = new Expression(0); }
 	DecStatement(Expression* lvalue, Expression* rvalue, DecStatement::DecStatementType dec_type) : lvalue(lvalue), rvalue(rvalue), type(Statement::StatementType::Declaration), dec_type(dec_type), Statement(type) { }
