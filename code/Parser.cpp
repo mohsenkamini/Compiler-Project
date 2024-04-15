@@ -488,7 +488,7 @@ Base *Parser::parseStatement()
         }
         default:
         {
-            Error::UnexpectedToken(Tok.getKind());
+            Error::UnexpectedToken(Tok);
         }
         }
     }
