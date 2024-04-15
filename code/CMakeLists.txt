@@ -4,5 +4,6 @@ add_executable (compiler
   Lexer.cpp
   Parser.cpp
   #Sema.cpp
+  Error.cpp
   )
 target_link_libraries(compiler PRIVATE ${llvm_libs})
