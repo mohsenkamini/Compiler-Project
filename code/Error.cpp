@@ -1,5 +1,7 @@
 #include "Error.h"
+#include "Lexer.h"
 #include <string>
+
 
 void Error::VariableExpected()
 {
