@@ -190,6 +190,7 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine(Token::TokenKind token_kin
         {
             Error::VariableExpected();
         }
+        DecStatement *state;
         if(token_kind == Token::KW_int){
             DecStatement *state = new DecStatement(new Expression(name), value, DecStatement::DecStatementType::Number);
         }else{
