@@ -149,8 +149,25 @@ namespace
             }
         };
 
-        virtual void visit(Expression &Node) override{
-            // TODO: Implement
+        virtual void visit(Expression &Node) override
+        {
+            if (Node.getKind() == Expression::ExpressionType::Identifier)
+            {
+                if (Scope.find(Node.getValue()) == Scope.end())
+                {
+                    error(NotDefinedVariable, Node.getValue());
+                }
+            }
+            else if (Node.getKind() == Expression::ExpressionType::BinaryOpType)
+            {
+                BinaryOp *declaration = (BinaryOp *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Expression::ExpressionType::BooleanOpType)
+            {
+                Node.getBooleanOp()->getLeft()->accept(*this);
+                Node.getBooleanOp()->getRight()->accept(*this);
+            }
         };
 
         virtual void visit(DecStatement &Node) override
@@ -213,12 +230,8 @@ namespace
 
         virtual void visit(AssignStatement &Node) override
         {
-            if (!Scope.count(Node.getLValue()->getValue()))
-            {
-                error(NotDefinedVariable, Node.getLValue()->getValue());
-            }
-            Expression *declaration = (Expression *)Node.getRValue();
-            declaration->accept(*this);
+            ((Expression *)Node.getLValue())->accept(*this);
+            ((Expression *)Node.getRValue())->accept(*this);
         };
     };
 }
