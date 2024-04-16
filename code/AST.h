@@ -282,6 +282,10 @@ public:
 		return rvalue;
 	}
 
+	DecStatementType getDecType() {
+		return dec_type;
+	}
+
 	virtual void accept(ASTVisitor& V) override
 	{
 		V.visit(*this);

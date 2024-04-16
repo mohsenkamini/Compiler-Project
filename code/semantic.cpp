@@ -13,19 +13,29 @@ namespace
         {
             AlreadyDefinedVariable,
             NotDefinedVariable,
-            DivideByZero
+            DivideByZero,
+            WrongValueTypeForVariable
         };
 
         void error(ErrorType errorType, llvm::StringRef V)
         {
-            if (errorType == ErrorType::DivideByZero)
+            switch (errorType)
             {
-                llvm::errs() << "Division by zero is not allowed."
-                             << "\n";
-            }
-            else
-            {
-                llvm::errs() << "Variable " << V << " is " << (errorType == AlreadyDefinedVariable ? "already" : "not") << " declared!\n";
+            case ErrorType::DivideByZero:
+                llvm::errs() << "Division by zero is not allowed!\n";
+                break;
+            case ErrorType::AlreadyDefinedVariable:
+                llvm::errs() << "Variable " << V << " is already declared!\n";
+                break;
+            case ErrorType::NotDefinedVariable:
+                llvm::errs() << "Variable " << V << " is not declared!\n";
+                break;
+            case ErrorType::WrongValueTypeForVariable:
+                llvm::errs() << "Illegal value for type " << V << "!\n";
+                break;
+            default:
+                llvm::errs() << "Unknown error\n";
+                break;
             }
             HasError = true;
             exit(3);
@@ -150,6 +160,18 @@ namespace
                 error(AlreadyDefinedVariable, Node.getLValue()->getValue());
             }
             Expression *declaration = (Expression *)Node.getRValue();
+            if (!(Node.getDecType() == DecStatement::DecStatementType.Boolean &&
+                  (declaration->getKind() == Expression::ExpressionType.Boolean ||
+                   declaration->getKind() == Expression::ExpressionType.BooleanOpType)))
+            {
+                error(WrongValueTypeForVariable, "bool");
+            }
+            if (!(Node.getDecType() == DecStatement::DecStatementType.Number &&
+                  (declaration->getKind() == Expression::ExpressionType.Number ||
+                   declaration->getKind() == Expression::ExpressionType.BinaryOpType)))
+            {
+                error(WrongValueTypeForVariable, "int");
+            }
             declaration->accept(*this);
         };
 
