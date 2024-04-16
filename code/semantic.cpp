@@ -119,7 +119,7 @@ namespace
             }
             else if (Node.getKind() == Statement::StatementType::Print)
             {
-                Print *declaration = (Print *)&Node;
+                PrintStatement *declaration = (PrintStatement *)&Node;
                 declaration->accept(*this);
             }
             // TODO: While and For
@@ -173,15 +173,15 @@ namespace
                 error(AlreadyDefinedVariable, Node.getLValue()->getValue());
             }
             Expression *declaration = (Expression *)Node.getRValue();
-            if (!(Node.getDecType() == DecStatement::DecStatementType.Boolean &&
-                  (declaration->getKind() == Expression::ExpressionType.Boolean ||
-                   declaration->getKind() == Expression::ExpressionType.BooleanOpType)))
+            if (!(Node.getDecType() == DecStatement::DecStatementType::Boolean &&
+                  (declaration->getKind() == Expression::ExpressionType::Boolean ||
+                   declaration->getKind() == Expression::ExpressionType::BooleanOpType)))
             {
                 error(WrongValueTypeForVariable, "bool");
             }
-            if (!(Node.getDecType() == DecStatement::DecStatementType.Number &&
-                  (declaration->getKind() == Expression::ExpressionType.Number ||
-                   declaration->getKind() == Expression::ExpressionType.BinaryOpType)))
+            if (!(Node.getDecType() == DecStatement::DecStatementType::Number &&
+                  (declaration->getKind() == Expression::ExpressionType::Number ||
+                   declaration->getKind() == Expression::ExpressionType::BinaryOpType)))
             {
                 error(WrongValueTypeForVariable, "int");
             }
@@ -217,11 +217,6 @@ namespace
             {
                 (*I)->accept(*this);
             }
-        };
-
-        virtual void visit(LoopStatement &Node) override{
-            // TODO: Implement
-
         };
 
         virtual void visit(AssignStatement &Node) override
