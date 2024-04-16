@@ -54,10 +54,6 @@ namespace
             }
         };
 
-        virtual void visit(Unary &Node) override{
-            // TODO: Implement
-        };
-
         virtual void visit(PrintStatement &Node) override
         {
             Expression *declaration = (Expression *)Node.getIdentifier();
