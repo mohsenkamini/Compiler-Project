@@ -1,9 +1,9 @@
 add_executable (compiler
   main.cpp
   #CodeGen.cpp
-  Lexer.cpp
-  Parser.cpp
+  lexer.cpp
+  parser.cpp
   semantic.cpp
-  Error.cpp
+  error.cpp
   )
 target_link_libraries(compiler PRIVATE ${llvm_libs})
