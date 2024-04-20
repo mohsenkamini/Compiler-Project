@@ -65,6 +65,11 @@ namespace
             // TODO: Implement again?
         }
 
+         virtual void visit(PrintStatement &Node) override
+        {
+            // TODO: Implement
+        }
+
         virtual void visit(Expression &Node) override
         {
             if (Node.getKind() == Expression::ExpressionType::Identifier)
