@@ -1,6 +1,6 @@
 add_executable (compiler
   main.cpp
-  #CodeGen.cpp
+  code_generator.cpp
   lexer.cpp
   parser.cpp
   semantic.cpp
