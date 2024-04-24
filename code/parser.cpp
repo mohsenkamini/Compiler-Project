@@ -188,7 +188,7 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine(Token::TokenKind token_kin
             advance();
             value = parseExpression();
         }
-        else if (Tok.is(Token::comma))
+        if (Tok.is(Token::comma))
         {
             advance();
         }
