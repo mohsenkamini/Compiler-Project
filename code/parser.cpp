@@ -187,7 +187,6 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine(Token::TokenKind token_kin
         {
             advance();
             value = parseExpression();
-            advance();
         }
         else if (Tok.is(Token::comma))
         {
@@ -195,7 +194,7 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine(Token::TokenKind token_kin
         }
         else if (Tok.is(Token::semi_colon))
         {
-            break;
+            // OK do nothing. The while will break itself.
         }
         else
         {
@@ -210,34 +209,23 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine(Token::TokenKind token_kin
         
         states.push_back(state);
     }
+
+    advance(); // pass semicolon
     return states;
 }
 
 Expression *Parser::parseExpression()
 {
-    Expression *expr;
-    bool isFound = false;
     try
     {
-        expr = parseIntExpression();
-        isFound = true;
+        return parseIntExpression();
     }
     catch (...)
     {
+        return parseLogicalExpression();
     }
-    try
-    {
-        expr = parseLogicalExpression();
-        isFound = true;
-    }
-    catch (...)
-    {
-    }
-    if (!isFound)
-    {
         Error::ExpressionExpected();
-    }
-    return expr;
+    return nullptr;
 }
 
 Expression *Parser::parseLogicalExpression()
@@ -339,16 +327,15 @@ Expression *Parser::parseLogicalTerm()
 Expression *Parser::parseIntExpression()
 {
     Expression *Left = parseTerm();
-    Expression *res;
     while (Tok.isOneOf(Token::plus, Token::minus))
     {
         BinaryOp::Operator Op =
             Tok.is(Token::plus) ? BinaryOp::Plus : BinaryOp::Minus;
         advance();
         Expression *Right = parseTerm();
-        res = new BinaryOp(Op, Left, Right);
+        Left = new BinaryOp(Op, Left, Right);
     }
-    return res;
+    return Left;
 }
 
 Expression *Parser::parseTerm()
