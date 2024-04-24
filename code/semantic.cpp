@@ -172,20 +172,29 @@ namespace
             {
                 error(AlreadyDefinedVariable, Node.getLValue()->getValue());
             }
-            Expression *declaration = (Expression *)Node.getRValue();
-            if (!(Node.getDecType() == DecStatement::DecStatementType::Boolean &&
-                  (declaration->getKind() == Expression::ExpressionType::Boolean ||
-                   declaration->getKind() == Expression::ExpressionType::BooleanOpType)))
-            {
-                error(WrongValueTypeForVariable, "bool");
+
+            Expression *rightValue = (Expression *)Node.getRValue();
+            if (rightValue == nullptr) {
+                return;
             }
-            if (!(Node.getDecType() == DecStatement::DecStatementType::Number &&
-                  (declaration->getKind() == Expression::ExpressionType::Number ||
-                   declaration->getKind() == Expression::ExpressionType::BinaryOpType)))
+            if (Node.getDecType() == DecStatement::DecStatementType::Boolean)
             {
-                error(WrongValueTypeForVariable, "int");
+                if (!(rightValue->getKind() == Expression::ExpressionType::Boolean ||
+                      rightValue->getKind() == Expression::ExpressionType::BooleanOpType))
+                {
+                    error(WrongValueTypeForVariable, "bool");
+                }
             }
-            declaration->accept(*this);
+            else if (Node.getDecType() == DecStatement::DecStatementType::Number)
+            {
+                if (!(rightValue->getKind() == Expression::ExpressionType::Number ||
+                      rightValue->getKind() == Expression::ExpressionType::BinaryOpType))
+                {
+                    error(WrongValueTypeForVariable, "int");
+                }
+            }
+
+            rightValue->accept(*this);
         };
 
         virtual void visit(IfStatement &Node) override
@@ -225,8 +234,7 @@ namespace
             ((Expression *)Node.getRValue())->accept(*this);
         };
 
-        virtual void visit(LoopStatement &Node) override
-        {
+        virtual void visit(LoopStatement &Node) override{
             // TODO: Implement
         };
     };

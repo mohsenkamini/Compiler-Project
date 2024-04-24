@@ -202,9 +202,9 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine(Token::TokenKind token_kin
         }
         DecStatement *state;
         if(token_kind == Token::KW_int){
-            DecStatement *state = new DecStatement(new Expression(name), value, DecStatement::DecStatementType::Number);
+            state = new DecStatement(new Expression(name), value, DecStatement::DecStatementType::Number);
         }else{
-            DecStatement *state = new DecStatement(new Expression(name), value, DecStatement::DecStatementType::Boolean);
+            state = new DecStatement(new Expression(name), value, DecStatement::DecStatementType::Boolean);
         }
         
         states.push_back(state);

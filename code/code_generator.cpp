@@ -57,15 +57,50 @@ namespace
 
         virtual void visit(Base &Node) override
         {
-            // TODO: Override again?
+            // TODO: find a better way to not implement this again!
+            for (auto I = Node.begin(), E = Node.end(); I != E; ++I)
+            {
+                (*I)->accept(*this);
+            }
         }
 
         virtual void visit(Statement &Node) override
         {
-            // TODO: Implement again?
+            // TODO: find a better way to not implement this again!
+            if (Node.getKind() == Statement::StatementType::Declaration)
+            {
+                DecStatement *declaration = (DecStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::Assignment)
+            {
+                AssignStatement *declaration = (AssignStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::If)
+            {
+                IfStatement *declaration = (IfStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::ElseIf)
+            {
+                ElseIfStatement *declaration = (ElseIfStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::Else)
+            {
+                ElseStatement *declaration = (ElseStatement *)&Node;
+                declaration->accept(*this);
+            }
+            else if (Node.getKind() == Statement::StatementType::Print)
+            {
+                PrintStatement *declaration = (PrintStatement *)&Node;
+                declaration->accept(*this);
+            }
+            // TODO: While and For
         }
 
-         virtual void visit(PrintStatement &Node) override
+        virtual void visit(PrintStatement &Node) override
         {
             // TODO: Implement
         }
@@ -175,7 +210,9 @@ namespace
         {
             Value *val = nullptr;
 
-            if (Node.getRValue()->getKind() == Expression::ExpressionType::BinaryOpType || Node.getRValue()->isNumber())
+            if (Node.getRValue() != nullptr &&
+                (Node.getRValue()->getKind() == Expression::ExpressionType::BinaryOpType ||
+                 Node.getRValue()->isNumber()))
             {
                 // If there is an expression provided, visit it and get its value
                 Node.getRValue()->accept(*this);
