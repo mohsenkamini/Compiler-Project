@@ -1,5 +1,5 @@
-#include "Error.h"
-#include "Lexer.h"
+#include "error.h"
+#include "lexer.h"
 #include <string>
 
 

@@ -1,5 +1,5 @@
 
-#include "Lexer.h"
+#include "lexer.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/InitLLVM.h"
 #include "llvm/Support/raw_ostream.h"
@@ -7,7 +7,7 @@
 #include "AST.h"
 #include <string>
 // #include "CodeGen.h"
-#include "Parser.h"
+#include "parser.h"
 // #include "Sema.h"
 
 using namespace std;

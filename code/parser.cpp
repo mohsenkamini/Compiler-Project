@@ -1,7 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
-#include "Error.h"
-#include "Parser.h"
+#include "error.h"
+#include "parser.h"
 #include <string>
 using namespace std;
 #endif
@@ -116,12 +116,10 @@ Base *Parser::parse()
         case Token::KW_for:
         {
             LoopStatement *statement = parseFor();
-            statement.push_back(statement);
+            statements.push_back(statement);
             break;
         }
-            return Base(statements);
         }
-        
     }
     return new Base(statements);
 }
@@ -632,7 +630,7 @@ LoopStatement *Parser::parseWhile()
         Base *allWhileStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new LoopStatement(condition, allWhileStatements->getStatements(), Statement::StateMentType::Loop);
+            return new LoopStatement(condition, allWhileStatements->getStatements(), Statement::StatementType::Loop);
         }
         else
 		{
@@ -648,27 +646,27 @@ LoopStatement *Parser::parseWhile()
 
 LoopStatement *Parser::parseFor()
 {
-    advence();
+    advance();
     if (!Tok.is(Token::l_paren))
     {
         Error::LeftParenthesisExpected();
     }
     advance();
-    llvm::SmallVector<DecStatement *> states = parseDefine();
-    if (states.size() == 0)
-    {
-        return nullptr;
-    }
-    while (states.size() > 0)
-    {
-        statements.push_back(states.back());
-        states.pop_back();
-    }
+    // TODO: llvm::SmallVector<DecStatement *> states = parseDefine(); ? or assign
+    // if (states.size() == 0)
+    // {
+    //     return nullptr;
+    // }
+    // while (states.size() > 0)
+    // {
+    //     statements.push_back(states.back());
+    //     states.pop_back();
+    // }
         
     check_for_semicolon();
     Expression *condition = parseLogicalTerm();
     check_for_semicolon();
-    AssignStatement* assign = parseAssign();
+    AssignStatement* assign = parseAssign(Tok.getText());
     advance();
     if (!Tok.is(Token::r_paren))
     {
@@ -682,7 +680,7 @@ LoopStatement *Parser::parseFor()
         Base *allForStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new LoopStatement(condition, allForStatements->getStatements(), Statement::StateMentType::Loop);
+            return new LoopStatement(condition, allForStatements->getStatements(), Statement::StatementType::Loop);
         }
         else
 		{

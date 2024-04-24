@@ -1,7 +1,7 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 #include "AST.h"
-#include "Lexer.h"
+#include "lexer.h"
 #include "llvm/Support/raw_ostream.h"
 #include <string>
 using namespace std;
@@ -55,6 +55,8 @@ public:
     Expression *parseTerm();
     Expression *parsePower();
     Expression *parseFactor();
+    LoopStatement *parseFor();
+    LoopStatement *parseWhile();
     AssignStatement *parseAssign(llvm::StringRef name);
     llvm::SmallVector<DecStatement *> parseDefine(Token::TokenKind token_kind);
     void check_for_semicolon();

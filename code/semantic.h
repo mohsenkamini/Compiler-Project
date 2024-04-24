@@ -2,7 +2,7 @@
 #define SEMA_H
 
 #include "AST.h"
-#include "Lexer.h"
+#include "lexer.h"
 
 class Semantic
 {

@@ -224,6 +224,11 @@ namespace
             ((Expression *)Node.getLValue())->accept(*this);
             ((Expression *)Node.getRValue())->accept(*this);
         };
+
+        virtual void visit(LoopStatement &Node) override
+        {
+            // TODO: Implement
+        };
     };
 }
 
