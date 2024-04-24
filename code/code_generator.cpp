@@ -239,29 +239,27 @@ namespace
             llvm::BasicBlock *BeforeBodyBB = IfBodyBB;
             llvm::Value *BeforeCondVal = Cond;
 
-            if (Node.hasElif())
+            if (Node.HasElseIf())
             {
-                for (auto &Elif : Node.getElifsStatements())
+                for (auto &elseIf : Node.getElseIfStatements())
                 {
-                    llvm::BasicBlock *ElifCondBB = llvm::BasicBlock::Create(MainFn->getContext(), "elif.cond", MainFn);
-
-                    llvm::BasicBlock *ElifBodyBB = llvm::BasicBlock::Create(MainFn->getContext(), "elif.body", MainFn);
+                    llvm::BasicBlock *ElseIfCondBB = llvm::BasicBlock::Create(MainFn->getContext(), "elseIf.cond", MainFn);
+                    llvm::BasicBlock *ElseIfBodyBB = llvm::BasicBlock::Create(MainFn->getContext(), "elseIf.body", MainFn);
 
                     Builder.SetInsertPoint(BeforeCondBB);
+                    Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, ElseIfCondBB);
 
-                    Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, ElifCondBB);
+                    Builder.SetInsertPoint(ElseIfCondBB);
+                    elseIf->getCondition()->accept(*this);
+                    llvm::Value *ElseIfCondVal = V;
 
-                    Builder.SetInsertPoint(ElifCondBB);
-                    Elif->getCondition()->accept(*this);
-                    llvm::Value *ElifCondVal = V;
-
-                    Builder.SetInsertPoint(ElifBodyBB);
-                    Elif->accept(*this);
+                    Builder.SetInsertPoint(ElseIfBodyBB);
+                    elseIf->accept(*this);
                     Builder.CreateBr(AfterIfBB);
 
-                    BeforeCondBB = ElifCondBB;
-                    BeforeCondVal = ElifCondVal;
-                    BeforeBodyBB = ElifBodyBB;
+                    BeforeCondBB = ElseIfCondBB;
+                    BeforeCondVal = ElseIfCondVal;
+                    BeforeBodyBB = ElseIfBodyBB;
                 }
             }
 
