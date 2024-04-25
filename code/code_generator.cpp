@@ -102,7 +102,12 @@ namespace
 
         virtual void visit(PrintStatement &Node) override
         {
-            // TODO: Implement
+            // Visit the right-hand side of the assignment and get its value.
+            Node.getExpr()->accept(*this);
+            Value *val = V;
+
+            // Create a call instruction to invoke the "print" function with the value.
+            CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
         }
 
         virtual void visit(Expression &Node) override
