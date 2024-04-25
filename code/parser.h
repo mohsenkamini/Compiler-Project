@@ -48,9 +48,7 @@ public:
     ElseIfStatement *parseElseIf();
     AssignStatement *parseUnaryExpression(Token &token);
     Expression *parseExpression();
-    Expression *parseLogicalExpression();
     Expression *parseLogicalComparison();
-    Expression *parseLogicalTerm();
     Expression *parseIntExpression();
     Expression *parseTerm();
     Expression *parseSign();

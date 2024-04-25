@@ -216,20 +216,6 @@ llvm::SmallVector<DecStatement *> Parser::parseDefine(Token::TokenKind token_kin
 
 Expression *Parser::parseExpression()
 {
-    try
-    {
-        return parseIntExpression();
-    }
-    catch (...)
-    {
-        return parseLogicalExpression();
-    }
-        Error::ExpressionExpected();
-    return nullptr;
-}
-
-Expression *Parser::parseLogicalExpression()
-{
     Expression *left = parseLogicalComparison();
     while (Tok.isOneOf(Token::KW_and, Token::KW_or))
     {
@@ -254,7 +240,7 @@ Expression *Parser::parseLogicalExpression()
 
 Expression *Parser::parseLogicalComparison()
 {
-    Expression *left = parseLogicalTerm();
+    Expression *left = parseIntExpression();
     while (Tok.isOneOf(Token::equal_equal, Token::not_equal, Token::less, Token::less_equal, Token::greater, Token::greater_equal))
     {
         BooleanOp::Operator Op;
@@ -282,46 +268,10 @@ Expression *Parser::parseLogicalComparison()
             break;
         }
         advance();
-        Expression *Right = parseLogicalTerm();
+        Expression *Right = parseIntExpression();
         left = new BooleanOp(Op, left, Right);
     }
     return left;
-}
-
-Expression *Parser::parseLogicalTerm()
-{
-    Expression *Res = nullptr;
-    switch (Tok.getKind())
-    {
-    case Token::l_paren:
-    {
-        advance();
-        Res = parseLogicalExpression();
-        if (!consume(Token::r_paren))
-            break;
-    }
-    case Token::KW_true:
-    {
-        Res = new Expression(true);
-        advance();
-        break;
-    }
-    case Token::KW_false:
-    {
-        Res = new Expression(false);
-        advance();
-        break;
-    }
-    default: // error handling
-    {
-        Res = parseIntExpression();
-        if (Res == nullptr)
-        {
-            Error::ExpressionExpected();
-        }
-    }
-    }
-    return Res;
 }
 
 Expression *Parser::parseIntExpression()
@@ -407,6 +357,18 @@ Expression *Parser::parseFactor()
         Res = parseExpression();
         if (!consume(Token::r_paren))
             break;
+    }
+    case Token::KW_true:
+    {
+        Res = new Expression(true);
+        advance();
+        break;
+    }
+    case Token::KW_false:
+    {
+        Res = new Expression(false);
+        advance();
+        break;
     }
     default: // error handling
     {
@@ -522,7 +484,7 @@ IfStatement *Parser::parseIf()
     }
 
     advance();
-    Expression *condition = parseLogicalTerm();
+    Expression *condition = parseExpression();
 
     if (!Tok.is(Token::r_paren))
     {
@@ -586,7 +548,7 @@ ElseIfStatement *Parser::parseElseIf()
     }
 
     advance();
-    Expression *condition = parseLogicalTerm();
+    Expression *condition = parseExpression();
 
     if (!Tok.is(Token::r_paren))
     {
@@ -617,7 +579,7 @@ LoopStatement *Parser::parseWhile()
     }
 
     advance();
-    Expression *condition = parseLogicalTerm();
+    Expression *condition = parseExpression();
 
     if (!Tok.is(Token::r_paren))
     {
@@ -665,7 +627,7 @@ LoopStatement *Parser::parseFor()
     // }
         
     check_for_semicolon();
-    Expression *condition = parseLogicalTerm();
+    Expression *condition = parseExpression();
     check_for_semicolon();
     AssignStatement* assign = parseAssign(Tok.getText());
     advance();

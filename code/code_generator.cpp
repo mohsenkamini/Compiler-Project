@@ -116,9 +116,10 @@ namespace
                 int int_value = Node.getNumber();
                 V = ConstantInt::get(Int32Ty, int_value, true);
             }
-            else if (Node.getKind() == Expression::ExpressionType::BooleanOpType)
+            else if (Node.getKind() == Expression::ExpressionType::Boolean)
             {
-                // TODO: call the visit(BooleanOp) here or not?
+                bool bool_value = Node.getBoolean();
+                V = ConstantInt::getBool(Int32Ty, bool_value);
             }
         }
 
@@ -210,9 +211,7 @@ namespace
         {
             Value *val = nullptr;
 
-            if (Node.getRValue() != nullptr &&
-                (Node.getRValue()->getKind() == Expression::ExpressionType::BinaryOpType ||
-                 Node.getRValue()->isNumber()))
+            if (Node.getRValue() != nullptr)
             {
                 // If there is an expression provided, visit it and get its value
                 Node.getRValue()->accept(*this);
