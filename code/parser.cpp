@@ -408,7 +408,6 @@ AssignStatement *Parser::parseAssign(llvm::StringRef name)
     {
         advance();
         value = parseExpression();
-        advance();
     }
     else
     {
