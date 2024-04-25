@@ -340,17 +340,32 @@ Expression *Parser::parseIntExpression()
 
 Expression *Parser::parseTerm()
 {
-    Expression *Left = parsePower();
+    Expression *Left = parseSign();
     while (Tok.isOneOf(Token::star, Token::slash, Token::mod))
     {
         BinaryOp::Operator Op =
             Tok.is(Token::star) ? BinaryOp::Mul : Tok.is(Token::slash) ? BinaryOp::Div
                                                                        : BinaryOp::Mod;
         advance();
-        Expression *Right = parsePower();
+        Expression *Right = parseSign();
         Left = new BinaryOp(Op, Left, Right);
     }
     return Left;
+}
+
+Expression *Parser::parseSign()
+{
+    if (Tok.is(Token::minus))
+    {
+        advance();
+        return new BinaryOp(BinaryOp::Mul, new Expression(-1), parsePower());
+    }
+    else if (Tok.is(Token::plus))
+    {
+        advance();
+        return parsePower();
+    }
+    return parsePower();
 }
 
 Expression *Parser::parsePower()

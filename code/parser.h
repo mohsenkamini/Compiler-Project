@@ -53,6 +53,7 @@ public:
     Expression *parseLogicalTerm();
     Expression *parseIntExpression();
     Expression *parseTerm();
+    Expression *parseSign();
     Expression *parsePower();
     Expression *parseFactor();
     LoopStatement *parseFor();
