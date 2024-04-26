@@ -56,7 +56,7 @@ namespace
 
         virtual void visit(PrintStatement &Node) override
         {
-            Expression *declaration = (Expression *)Node.getIdentifier();
+            Expression *declaration = (Expression *)Node.getExpr();
             declaration->accept(*this);
         };
 
