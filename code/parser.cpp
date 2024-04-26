@@ -385,14 +385,14 @@ AssignStatement *Parser::parseAssign(llvm::StringRef name)
     {
         advance();
         value = parseExpression();
-    }else if(Tok.isOneOf(Token::plus_equal, Token::minus_qual, Token::star_equal, Token::slash_equal, Token::mod_equal)){
+    }else if(Tok.isOneOf(Token::plus_equal, Token::minus_equal, Token::star_equal, Token::slash_equal, Token::mod_equal)){
         // storing token
         Token current_op = Tok;
         advance();
         value = parseExpression();
         if(current_op.is(Token::plus_equal)){
             value = new BinaryOp(BinaryOp::Plus, new Expression(name), value);
-        }else if(current_op.is(Token::minus_qual)){
+        }else if(current_op.is(Token::minus_equal)){
             value = new BinaryOp(BinaryOp::Minus, new Expression(name), value);
         }else if(current_op.is(Token::star_equal)){
             value = new BinaryOp(BinaryOp::Mul, new Expression(name), value);
