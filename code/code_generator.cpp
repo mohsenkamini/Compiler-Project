@@ -218,51 +218,31 @@ namespace
                 V = Builder.CreateSDiv(Left, Right);
                 break;
             case BinaryOp::Pow:{
-                // if ((Node.getRight())->isNumber())
-                // {
-                //     int power = (Node.getRight())->getNumber();
-                //     Value *result = Left;
-                //     for (int i = 1; i < power; i++)
-                //     {
-                //         result = Builder.CreateNSWMul(result, Left);
-                //     }
-                //     V = result;
-                // }
-                Value *Exponent = Right; // This should be the result of Node.getRight()->accept(*this);
                 Function *TheFunction = Builder.GetInsertBlock()->getParent();
                 BasicBlock *PreLoopBB = Builder.GetInsertBlock();
                 BasicBlock *LoopBB = BasicBlock::Create(M->getContext(), "loop", TheFunction);
                 BasicBlock *AfterLoopBB = BasicBlock::Create(M->getContext(), "afterloop");
 
-                // Initial setup before the loop
                 Builder.CreateBr(LoopBB);
                 Builder.SetInsertPoint(LoopBB);
 
-                // Create the PHI node for the result with initial value 'Left' (base)
-                PHINode *ResultPHI = Builder.CreatePHI(Left->getType(), 2, "result");
+                PHINode *ResultPHI = Builder.CreatePHI(Left->getType(), 2, "resultphi");
                 ResultPHI->addIncoming(Left, PreLoopBB);
 
-                // Create the PHI node for the loop variable
-                PHINode *IndexPHI = Builder.CreatePHI(Exponent->getType(), 2, "index");
-                IndexPHI->addIncoming(ConstantInt::get(Exponent->getType(), 1), PreLoopBB);
+                PHINode *IndexPHI = Builder.CreatePHI(Type::getInt32Ty(M->getContext()), 2, "indexphi");
+                IndexPHI->addIncoming(ConstantInt::get(Type::getInt32Ty(M->getContext()), 1), PreLoopBB);
 
-                // Multiply the result by 'Left'
                 Value *NewResult = Builder.CreateNSWMul(ResultPHI, Left, "multmp");
+                Value *NewIndex = Builder.CreateAdd(IndexPHI, ConstantInt::get(Type::getInt32Ty(M->getContext()), 1), "indexinc");
 
-                // Increment the index
-                Value *NewIndex = Builder.CreateAdd(IndexPHI, ConstantInt::get(Exponent->getType(), 1), "nextindex");
-
-                // Continue or exit the loop
-                Value *ExitCond = Builder.CreateICmpEQ(NewIndex, Exponent, "loopcond");
+                Value *ExitCond = Builder.CreateICmpEQ(NewIndex, Node.getRight()->codegen(), "loopcond");
                 Builder.CreateCondBr(ExitCond, AfterLoopBB, LoopBB);
 
-                // Update PHI nodes
                 ResultPHI->addIncoming(NewResult, LoopBB);
                 IndexPHI->addIncoming(NewIndex, LoopBB);
 
-                // Insert point and result handling after the loop
                 Builder.SetInsertPoint(AfterLoopBB);
-                V = ResultPHI;  // V is the result of a^b
+                V = ResultPHI;
                 break;
             }
             case BinaryOp::Mod:
