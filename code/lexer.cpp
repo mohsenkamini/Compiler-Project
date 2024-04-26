@@ -43,14 +43,38 @@ void Lexer::next(Token &token)
 	{
 		++BufferPtr;
 	}
-
+	bool is_comment = false;
+	if (*BufferPtr == '/' && *(BufferPtr + 1) == '*'){
+		is_comment = true;
+	}
+	while(is_comment){
+		if (!*BufferPtr)
+		{
+			token.Kind = Token::eof;
+			return;
+		}
+		while (*BufferPtr && *BufferPtr != '*' && *(BufferPtr + 1) != '/')
+		{
+			++BufferPtr;
+		}
+		if(*BufferPtr == '*' && *(BufferPtr + 1) == '/'){
+			BufferPtr += 2;
+			is_comment = false;
+		}
+		else{
+			++BufferPtr;
+		}
+		while (*BufferPtr && charinfo::isWhitespace(*BufferPtr))
+		{
+			++BufferPtr;
+		}
+	}
 	// since end of context is 0 -> !0 = true -> end of context
 	if (!*BufferPtr)
 	{
 		token.Kind = Token::eof;
 		return;
 	}
-
 	// looking for keywords or identifiers like "int", a123 , ...
 	if (charinfo::isLetter(*BufferPtr))
 	{
