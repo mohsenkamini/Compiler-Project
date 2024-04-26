@@ -27,6 +27,8 @@ namespace
         FunctionType *CalcWriteFnTy;
         FunctionType *CalcWriteFnTyBool;
         Function *CalcWriteFn;
+        Function *CalcWriteFnBool;
+        
 
     public:
         // Constructor for the visitor class
@@ -41,6 +43,7 @@ namespace
             CalcWriteFnTy = FunctionType::get(VoidTy, {Int32Ty}, false);
             CalcWriteFnTyBool = FunctionType::get(VoidTy, {Int1Ty}, false);
             CalcWriteFn = Function::Create(CalcWriteFnTy, GlobalValue::ExternalLinkage, "print", M);
+            CalcWriteFnBool = Function::Create(CalcWriteFnTyBool, GlobalValue::ExternalLinkage, "print", M);
         }
 
         // Entry point for generating LLVM IR from the AST
@@ -112,7 +115,7 @@ namespace
             Node.getExpr()->accept(*this);
             Value *val = V;
             if (Node.getExpr()->isBoolean()) {
-                CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFn, {val});
+                CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
             }else{
                 CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
             }
