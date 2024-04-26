@@ -243,13 +243,13 @@ public:
 class PrintStatement : public Statement
 {
     private:
-    Expression * identifier;
+    Expression * expr;
     public:
     // contructor that sets type
-    PrintStatement(Expression * identifier) : identifier(identifier), Statement(Statement::StatementType::Print) {}
-    Expression * getIdentifier()
+    PrintStatement(Expression * identifier) : expr(identifier), Statement(Statement::StatementType::Print) {}
+    Expression * getExpr()
     {
-        return identifier;
+        return expr;
     }
     virtual void accept(ASTVisitor &V) override
     {
