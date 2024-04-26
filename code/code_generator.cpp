@@ -134,7 +134,7 @@ namespace
             // Determine the type of 'val' and select the appropriate print function
             Type *valType = val->getType();
             if (valType == Int1Ty) {
-                val = Builder.CreateZExt(val, Int32Ty, "bool_to_int");
+                val = Builder.CreateZExt(val, Int32Ty);
             }
             CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
         }
