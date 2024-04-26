@@ -347,7 +347,11 @@ namespace
                     BeforeCondVal = ElseIfCondVal;
                     BeforeBodyBB = ElseIfBodyBB;
                 }
+                // finishing the last else
+                Builder.SetInsertPoint(BeforeCondBB);
+                Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, AfterIfBB);
             }
+
 
             llvm::BasicBlock *ElseBB = nullptr;
             if (Node.HasElse())
