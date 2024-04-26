@@ -364,9 +364,6 @@ namespace
                 Builder.SetInsertPoint(ElseBB);
                 Node.getElseStatement()->accept(*this);
                 Builder.CreateBr(AfterIfBB);
-
-                Builder.SetInsertPoint(BeforeCondBB);
-                Builder.CreateCondBr(Cond, IfBodyBB, ElseBB);
             }
             else
             {
