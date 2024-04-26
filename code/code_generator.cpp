@@ -112,20 +112,6 @@ namespace
             // TODO: While and For
         }
 
-        // virtual void visit(PrintStatement &Node) override
-        // {
-        //     // Visit the right-hand side of the assignment and get its value.
-        //     Node.getExpr()->accept(*this);
-        //     Value *val = V;
-        //     CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
-        //     // if (Node.getExpr()->isBoolean()) {
-                
-        //     // }else{
-        //     //     CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
-        //     // }
-            
-        // }
-
         virtual void visit(PrintStatement &Node) override {
             // Visit the right-hand side of the expression and get its value.
             Node.getExpr()->accept(*this);
