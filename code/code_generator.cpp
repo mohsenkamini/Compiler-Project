@@ -46,7 +46,7 @@ namespace
             CalcWriteFnTy = FunctionType::get(VoidTy, {Int32Ty}, false);
             CalcWriteFnTyBool = FunctionType::get(VoidTy, {Int1Ty}, false);
             CalcWriteFn = Function::Create(CalcWriteFnTy, GlobalValue::ExternalLinkage, "print", M);
-            CalcWriteFnBool = Function::Create(CalcWriteFnTyBool, GlobalValue::ExternalLinkage, "print", M);
+            CalcWriteFnBool = Function::Create(CalcWriteFnTyBool, GlobalValue::ExternalLinkage, "printBool", M);
         }
 
         // Entry point for generating LLVM IR from the AST
