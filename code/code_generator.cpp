@@ -242,8 +242,14 @@ namespace
             }
             else
             {
-                Value *Zero = ConstantInt::get(Type::getInt32Ty(M->getContext()), 0);
-                Builder.CreateStore(Zero, nameMap[Var]);
+                if(Node.getDecType() == DecStatement::DecStatementType::Number){
+                    Value *Zero = ConstantInt::get(Type::getInt32Ty(M->getContext()), 0);
+                    Builder.CreateStore(Zero, nameMap[Var]);
+                } else{
+                    Value *False = ConstantInt::get(Type::getInt1Ty(M->getContext()), 0);
+                    Builder.CreateStore(False, nameMap[Var]);
+                }
+                
             }
         }
 
