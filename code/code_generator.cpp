@@ -219,38 +219,36 @@ namespace
                 break;
             case BinaryOp::Pow:{
                 Function *func = Builder.GetInsertBlock()->getParent();
-                BasicBlock *entryBB = Builder.GetInsertBlock();
+                BasicBlock *preLoopBB = Builder.GetInsertBlock();
                 BasicBlock *loopBB = BasicBlock::Create(M->getContext(), "loop", func);
                 BasicBlock *afterLoopBB = BasicBlock::Create(M->getContext(), "afterloop", func);
 
-                // Entry part of the loop
+                // Setup loop entry
                 Builder.CreateBr(loopBB);
                 Builder.SetInsertPoint(loopBB);
 
-                // Loop variables
+                // Create loop variables (PHI nodes)
                 PHINode *resultPhi = Builder.CreatePHI(Left->getType(), 2, "result");
-                resultPhi->addIncoming(Left, entryBB);
+                resultPhi->addIncoming(Left, preLoopBB);
 
                 PHINode *indexPhi = Builder.CreatePHI(Type::getInt32Ty(M->getContext()), 2, "index");
-                indexPhi->addIncoming(ConstantInt::get(Type::getInt32Ty(M->getContext()), 1), entryBB);
+                indexPhi->addIncoming(ConstantInt::get(Type::getInt32Ty(M->getContext()), 0), preLoopBB);
 
                 // Perform multiplication
                 Value *updatedResult = Builder.CreateNSWMul(resultPhi, Left, "multemp");
                 Value *updatedIndex = Builder.CreateAdd(indexPhi, ConstantInt::get(Type::getInt32Ty(M->getContext()), 1), "indexinc");
 
-                // Create exit condition
-                Node.getRight()->accept(*this);
-                Value *rightValue = V;  // The value of the exponent after evaluation
-                Value *condition = Builder.CreateICmpEQ(updatedIndex, rightValue, "loopcond");
-                Builder.CreateCondBr(condition, afterLoopBB, loopBB);
+                // Exit condition
+                Value *condition = Builder.CreateICmpNE(updatedIndex, Exponent, "loopcond");
+                Builder.CreateCondBr(condition, loopBB, afterLoopBB);
 
-                // Update PHI nodes
+                // Update PHI nodes for the next iteration
                 resultPhi->addIncoming(updatedResult, loopBB);
                 indexPhi->addIncoming(updatedIndex, loopBB);
 
-                // After loop
+                // Complete the loop
                 Builder.SetInsertPoint(afterLoopBB);
-                V = resultPhi;
+                V = resultPhi; // The result of a^b
                 break;
             }
             case BinaryOp::Mod:
