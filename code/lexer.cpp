@@ -82,7 +82,7 @@ void Lexer::next(Token &token)
 
 		// until reaches the end of lexeme
 		// example: ".int " -> "i.nt " -> "in.t " -> "int. "
-		while (charinfo::isLetter(*end) || charinfo::isDigit(*end))
+		while (charinfo::isLetter(*end) || charinfo::isDigit(*end) || *end == '_')
 		{
 			++end;
 		}
