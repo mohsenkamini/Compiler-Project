@@ -349,7 +349,7 @@ namespace
                 }
                 // finishing the last else
                 Builder.SetInsertPoint(BeforeCondBB);
-                Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, AfterIfBB);
+                // Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, AfterIfBB);
             }
 
 
@@ -358,6 +358,9 @@ namespace
             {
                 ElseStatement *elseS = Node.getElseStatement();
                 ElseBB = llvm::BasicBlock::Create(MainFn->getContext(), "else.body", MainFn);
+                if(Node.HasElseIf()){
+                    Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, ElseBB);
+                }
                 Builder.SetInsertPoint(ElseBB);
                 Node.getElseStatement()->accept(*this);
                 Builder.CreateBr(AfterIfBB);
