@@ -370,8 +370,10 @@ namespace
                 Builder.SetInsertPoint(BeforeCondBB);
                 if(Node.HasElseIf()){
                     Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, AfterIfBB);
+                }else{
+                    Builder.CreateCondBr(Cond, IfBodyBB, AfterIfBB);
                 }
-                Builder.CreateCondBr(Cond, IfBodyBB, AfterIfBB);
+                
             }
 
             Builder.SetInsertPoint(AfterIfBB);
