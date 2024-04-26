@@ -133,8 +133,14 @@ namespace
 
             // Determine the type of 'val' and select the appropriate print function
             Type *valType = val->getType();
-            
-            CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
+            if (valType == Int32Ty) {
+                CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
+            } else if (valType == Int1Ty) {
+                CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
+            } else {
+                // If the type is not supported, print an error message
+                llvm::errs() << "Unsupported type for print statement\n";
+            }
         }
 
         virtual void visit(Expression &Node) override
