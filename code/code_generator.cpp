@@ -116,11 +116,12 @@ namespace
             // Visit the right-hand side of the assignment and get its value.
             Node.getExpr()->accept(*this);
             Value *val = V;
-            if (Node.getExpr()->isBoolean()) {
-                CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
-            }else{
-                CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
-            }
+            CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
+            // if (Node.getExpr()->isBoolean()) {
+                
+            // }else{
+            //     CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
+            // }
             
         }
 
