@@ -385,11 +385,20 @@ AssignStatement *Parser::parseAssign(llvm::StringRef name)
     {
         advance();
         value = parseExpression();
-    }
-    else
-    {
+    }else if(Tok.isOneOf(Token::plus, Token::minus, Token::star, Token::slash, Token::mod, Token::power)){
+        // storing token
+        Token current_op = Tok;
+        advance();
+        if(!Tok.is(Token::equal)){
+            Error::EqualExpected();
+        }
+        advance();
+        value = parseExpression();
+        value = new BinaryOp(current_op.getBinaryOp(), new Expression(name), value);
+    }else{
         Error::EqualExpected();
     }
+    
     return new AssignStatement(new Expression(name), value);
 }
 
