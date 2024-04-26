@@ -109,13 +109,13 @@ Base *Parser::parse()
         }
         case Token::KW_while:
         {
-            LoopStatement *statement = parseWhile();
+            WhileStatement *statement = parseWhile();
             statements.push_back(statement);
             break;
         }
         case Token::KW_for:
         {
-            LoopStatement *statement = parseFor();
+            ForStatement *statement = parseFor();
             statements.push_back(statement);
             break;
         }
@@ -587,7 +587,7 @@ ElseIfStatement *Parser::parseElseIf()
     return new ElseIfStatement(condition, allIfStatements->getStatements(), Statement::StatementType::ElseIf);
 }
 
-LoopStatement *Parser::parseWhile()
+WhileStatement *Parser::parseWhile()
 {
     advance();
     if (!Tok.is(Token::l_paren))
@@ -610,7 +610,7 @@ LoopStatement *Parser::parseWhile()
         Base *allWhileStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new LoopStatement(condition, allWhileStatements->getStatements(), Statement::StatementType::Loop);
+            return new WhileStatement(condition, allWhileStatements->getStatements(), Statement::StatementType::Loop);
         }
         else
 		{
@@ -624,7 +624,7 @@ LoopStatement *Parser::parseWhile()
     advance();
 }
 
-LoopStatement *Parser::parseFor()
+ForStatement *Parser::parseFor()
 {
     advance();
     if (!Tok.is(Token::l_paren))
