@@ -1,12 +1,12 @@
 #include "semantic.h"
-#include "llvm/ADT/StringSet.h"
+#include "llvm/ADT/StringMap.h"
 #include "llvm/Support/raw_ostream.h"
 
 namespace
 {
     class DeclCheck : public ASTVisitor
     {
-        llvm::StringSet<> Scope;
+        llvm::StringMap<char> variableTypeMap;
         bool HasError;
 
         enum ErrorType
@@ -149,7 +149,7 @@ namespace
         {
             if (Node.getKind() == Expression::ExpressionType::Identifier)
             {
-                if (Scope.find(Node.getValue()) == Scope.end())
+                if (variableTypeMap.count(Node.getValue()) == 0)
                 {
                     error(NotDefinedVariable, Node.getValue());
                 }
@@ -168,13 +168,23 @@ namespace
 
         virtual void visit(DecStatement &Node) override
         {
-            if (!Scope.insert(Node.getLValue()->getValue()).second)
+            if (variableTypeMap.count(Node.getLValue()->getValue()) > 0)
             {
                 error(AlreadyDefinedVariable, Node.getLValue()->getValue());
             }
+            // Add this new variable to variableTypeMap
+            if (Node.getDecType() == DecStatement::DecStatementType::Boolean)
+            {
+                variableTypeMap[Node.getLValue()->getValue()] = 'b';
+            }
+            else
+            {
+                variableTypeMap[Node.getLValue()->getValue()] = 'i';
+            }
 
             Expression *rightValue = (Expression *)Node.getRValue();
-            if (rightValue == nullptr) {
+            if (rightValue == nullptr)
+            {
                 return;
             }
             if (Node.getDecType() == DecStatement::DecStatementType::Boolean)
@@ -230,8 +240,20 @@ namespace
 
         virtual void visit(AssignStatement &Node) override
         {
-            ((Expression *)Node.getLValue())->accept(*this);
-            ((Expression *)Node.getRValue())->accept(*this);
+            Node.getLValue()->accept(*this);
+            Node.getRValue()->accept(*this);
+            if (variableTypeMap.lookup(Node.getLValue()->getValue()) == 'i' &&
+                (Node.getRValue()->getKind() == Expression::ExpressionType::Boolean ||
+                 Node.getRValue()->getKind() == Expression::ExpressionType::BooleanOpType))
+            {
+                error(WrongValueTypeForVariable, "int");
+            }
+            if (variableTypeMap.lookup(Node.getLValue()->getValue()) == 'b' &&
+                (Node.getRValue()->getKind() == Expression::ExpressionType::Number ||
+                 Node.getRValue()->getKind() == Expression::ExpressionType::BinaryOpType))
+            {
+                error(WrongValueTypeForVariable, "bool");
+            }
         };
 
         virtual void visit(LoopStatement &Node) override{
