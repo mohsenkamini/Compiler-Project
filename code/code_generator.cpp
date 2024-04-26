@@ -15,6 +15,7 @@ namespace
         IRBuilder<> Builder;
         Type *VoidTy;
         Type *Int32Ty;
+        Type *Int1Ty;
         Type *Int8PtrTy;
         Type *Int8PtrPtrTy;
         Constant *Int32Zero;
@@ -37,6 +38,7 @@ namespace
             // Initialize LLVM types and constants
             VoidTy = Type::getVoidTy(M->getContext());
             Int32Ty = Type::getInt32Ty(M->getContext());
+            Int1Ty = Type::getInt1Ty(M->getContext());
             Int8PtrTy = Type::getInt8PtrTy(M->getContext());
             Int8PtrPtrTy = Int8PtrTy->getPointerTo();
             Int32Zero = ConstantInt::get(Int32Ty, 0, true);
