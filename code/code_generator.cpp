@@ -132,26 +132,15 @@ namespace
 
             // Determine the type of 'val' and select the appropriate print function
             Type *valType = val->getType();
-            Function *printFunction;
-            FunctionType *printFunctionType;
-
             if (valType == Int1Ty) {
-                // If the value is a Boolean, use the Boolean print function
-                printFunction = CalcWriteFnBool;
-                printFunctionType = CalcWriteFnTyBool;
-                // Extend Boolean to match the expected integer print function signature (if needed)
                 val = Builder.CreateZExt(val, Int32Ty, "bool_to_int");
+                CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
             } else {
                 // Assume the value is an integer or other compatible types
                 printFunction = CalcWriteFn;
                 printFunctionType = CalcWriteFnTy;
+                CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
             }
-
-            // Ensure the print function is correctly set up in the module
-            printFunction = M->getOrInsertFunction("print", printFunctionType).getCallee();
-
-            // Create a call instruction to invoke the print function with the value.
-            Builder.CreateCall(printFunction, {val});
         }
 
         virtual void visit(Expression &Node) override
