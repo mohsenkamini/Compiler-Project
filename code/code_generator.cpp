@@ -232,7 +232,8 @@ namespace
             StringRef Var = I;
 
             // Create an alloca instruction to allocate memory for the variable
-            nameMap[Var] = Builder.CreateAlloca(Int32Ty);
+            Type *varType = (Node.getDecType() == DecStatement::DecStatementType::Number) ? Int32Ty : Type::getInt1Ty(M->getContext());
+            nameMap[Var] = Builder.CreateAlloca(varType);
 
             // Store the initial value (if any) in the variable's memory location
             if (val != nullptr)
