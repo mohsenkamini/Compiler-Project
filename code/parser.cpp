@@ -400,8 +400,6 @@ AssignStatement *Parser::parseAssign(llvm::StringRef name)
             value = new BinaryOp(BinaryOp::Div, new Expression(name), value);
         }else if(current_op.is(Token::mod_equal)){
             value = new BinaryOp(BinaryOp::Mod, new Expression(name), value);
-        }else{
-            Error::UnexpectedToken();
         }
     }else{
         Error::EqualExpected();
