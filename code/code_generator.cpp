@@ -141,7 +141,12 @@ namespace
         {
             if (Node.getKind() == Expression::ExpressionType::Identifier)
             {
-                V = Builder.CreateLoad(Int32Ty, nameMap[Node.getValue()]);
+                AllocaInst *allocaInst = nameMap[Node.getValue()];
+                if (!allocaInst) {
+                   llvm::errs() << "Undefined variable '" << Node.getValue() << "'\n";
+                    return;
+                }
+                V = Builder.CreateLoad(allocaInst->getAllocatedType(), allocaInst, Node.getValue());
             }
             else if (Node.getKind() == Expression::ExpressionType::Number)
             {
