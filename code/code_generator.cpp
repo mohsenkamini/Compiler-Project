@@ -109,6 +109,7 @@ namespace
             // Visit the right-hand side of the assignment and get its value.
             Node.getExpr()->accept(*this);
             Value *val = V;
+            val->getType()->dump(); // debug
             if (val->getType() == Type::getInt1Ty(Builder.getContext())) {
                 val = Builder.CreateZExt(val, Type::getInt32Ty(Builder.getContext()), "bool_to_int");
             }
