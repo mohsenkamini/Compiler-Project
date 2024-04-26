@@ -217,7 +217,7 @@ namespace
             case BinaryOp::Div:
                 V = Builder.CreateSDiv(Left, Right);
                 break;
-            case BinaryOp::Pow:
+            case BinaryOp::Pow:{
                 // if ((Node.getRight())->isNumber())
                 // {
                 //     int power = (Node.getRight())->getNumber();
@@ -264,6 +264,7 @@ namespace
                 Builder.SetInsertPoint(AfterLoopBB);
                 V = ResultPHI;  // V is the result of a^b
                 break;
+            }
             case BinaryOp::Mod:
                 Value *division = Builder.CreateSDiv(Left, Right);
                 Value *multiplication = Builder.CreateNSWMul(division, Right);
