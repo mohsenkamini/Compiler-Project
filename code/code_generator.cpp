@@ -223,32 +223,26 @@ namespace
                 BasicBlock *loopBB = BasicBlock::Create(M->getContext(), "loop", func);
                 BasicBlock *afterLoopBB = BasicBlock::Create(M->getContext(), "afterloop", func);
 
-                // Entry part of the loop
                 Builder.CreateBr(loopBB);
                 Builder.SetInsertPoint(loopBB);
 
-                // Loop variables
                 PHINode *resultPhi = Builder.CreatePHI(Left->getType(), 2, "result");
                 resultPhi->addIncoming(Left, entryBB);
 
                 PHINode *indexPhi = Builder.CreatePHI(Type::getInt32Ty(M->getContext()), 2, "index");
                 indexPhi->addIncoming(ConstantInt::get(Type::getInt32Ty(M->getContext()), 1), entryBB);
 
-                // Perform multiplication
                 Value *updatedResult = Builder.CreateNSWMul(resultPhi, Left, "multemp");
                 Value *updatedIndex = Builder.CreateAdd(indexPhi, ConstantInt::get(Type::getInt32Ty(M->getContext()), 1), "indexinc");
 
-                // Create exit condition
                 Node.getRight()->accept(*this);
                 Value *rightValue = V;  // The value of the exponent after evaluation
                 Value *condition = Builder.CreateICmpEQ(updatedIndex, rightValue, "loopcond");
                 Builder.CreateCondBr(condition, afterLoopBB, loopBB);
 
-                // Update PHI nodes
                 resultPhi->addIncoming(updatedResult, loopBB);
                 indexPhi->addIncoming(updatedIndex, loopBB);
 
-                // After loop
                 Builder.SetInsertPoint(afterLoopBB);
                 V = resultPhi;
                 break;
