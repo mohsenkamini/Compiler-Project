@@ -368,6 +368,9 @@ namespace
             else
             {
                 Builder.SetInsertPoint(BeforeCondBB);
+                if(Node.HasElseIf()){
+                    Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, AfterIfBB);
+                }
                 Builder.CreateCondBr(Cond, IfBodyBB, AfterIfBB);
             }
 
