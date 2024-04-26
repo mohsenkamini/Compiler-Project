@@ -136,9 +136,6 @@ namespace
                 val = Builder.CreateZExt(val, Int32Ty, "bool_to_int");
                 CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
             } else {
-                // Assume the value is an integer or other compatible types
-                printFunction = CalcWriteFn;
-                printFunctionType = CalcWriteFnTy;
                 CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
             }
         }
