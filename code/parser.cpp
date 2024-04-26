@@ -394,7 +394,19 @@ AssignStatement *Parser::parseAssign(llvm::StringRef name)
         }
         advance();
         value = parseExpression();
-        value = new BinaryOp(current_op.getBinaryOp(), new Expression(name), value);
+        if(current_op.is(Token::plus)){
+            value = new BinaryOp(BinaryOp::Plus, new Expression(name), value);
+        }else if(current_op.is(Token::minus)){
+            value = new BinaryOp(BinaryOp::Minus, new Expression(name), value);
+        }else if(current_op.is(Token::star)){
+            value = new BinaryOp(BinaryOp::Mul, new Expression(name), value);
+        }else if(current_op.is(Token::slash)){
+            value = new BinaryOp(BinaryOp::Div, new Expression(name), value);
+        }else if(current_op.is(Token::mod)){
+            value = new BinaryOp(BinaryOp::Mod, new Expression(name), value);
+        }else if(current_op.is(Token::power)){
+            value = new BinaryOp(BinaryOp::Pow, new Expression(name), value);
+        }
     }else{
         Error::EqualExpected();
     }
