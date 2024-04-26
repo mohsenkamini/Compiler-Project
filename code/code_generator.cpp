@@ -25,6 +25,7 @@ namespace
         llvm::FunctionType *MainFty;
         llvm::Function *MainFn;
         FunctionType *CalcWriteFnTy;
+        FunctionType *CalcWriteFnTyBool;
         Function *CalcWriteFn;
 
     public:
@@ -38,6 +39,7 @@ namespace
             Int8PtrPtrTy = Int8PtrTy->getPointerTo();
             Int32Zero = ConstantInt::get(Int32Ty, 0, true);
             CalcWriteFnTy = FunctionType::get(VoidTy, {Int32Ty}, false);
+            CalcWriteFnTyBool = FunctionType::get(VoidTy, {Int1Ty}, false);
             CalcWriteFn = Function::Create(CalcWriteFnTy, GlobalValue::ExternalLinkage, "print", M);
         }
 
@@ -109,9 +111,12 @@ namespace
             // Visit the right-hand side of the assignment and get its value.
             Node.getExpr()->accept(*this);
             Value *val = V;
-
-            // Create a call instruction to invoke the "print" function with the value.
-            CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
+            if (Node.getExpr()->isBoolean()) {
+                CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFn, {val});
+            }else{
+                CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
+            }
+            
         }
 
         virtual void visit(Expression &Node) override
