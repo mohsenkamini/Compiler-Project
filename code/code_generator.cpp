@@ -19,6 +19,7 @@ namespace
         Type *Int8PtrTy;
         Type *Int8PtrPtrTy;
         Constant *Int32Zero;
+        Constant *Int1Zero;
 
         Value *V;
         StringMap<AllocaInst *> nameMap;
@@ -152,7 +153,7 @@ namespace
             else if (Node.getKind() == Expression::ExpressionType::Boolean)
             {
                 bool bool_value = Node.getBoolean();
-                V = ConstantInt::getBool(Int32Ty, bool_value);
+                V = ConstantInt::getBool(Int1Ty, bool_value);
             }
         }
 
