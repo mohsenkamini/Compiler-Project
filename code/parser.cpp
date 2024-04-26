@@ -496,6 +496,7 @@ IfStatement *Parser::parseIf()
     {
         Error::LeftBraceExpected();
     }
+    advance();
     Base *allIfStatements = parseStatement();
     if (!Tok.is(Token::r_brace))
     {
