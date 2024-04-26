@@ -239,7 +239,7 @@ namespace
                 Value *updatedIndex = Builder.CreateAdd(indexPhi, ConstantInt::get(Type::getInt32Ty(M->getContext()), 1), "indexinc");
 
                 // Exit condition
-                Value *condition = Builder.CreateICmpNE(updatedIndex, Exponent, "loopcond");
+                Value *condition = Builder.CreateICmpNE(updatedIndex, Right, "loopcond");
                 Builder.CreateCondBr(condition, loopBB, afterLoopBB);
 
                 // Update PHI nodes for the next iteration
