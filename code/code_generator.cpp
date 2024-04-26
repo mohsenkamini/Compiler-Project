@@ -24,6 +24,8 @@ namespace
 
         llvm::FunctionType *MainFty;
         llvm::Function *MainFn;
+        FunctionType *CalcWriteFnTy;
+        Function *CalcWriteFn;
 
     public:
         // Constructor for the visitor class
@@ -35,6 +37,8 @@ namespace
             Int8PtrTy = Type::getInt8PtrTy(M->getContext());
             Int8PtrPtrTy = Int8PtrTy->getPointerTo();
             Int32Zero = ConstantInt::get(Int32Ty, 0, true);
+            CalcWriteFnTy = FunctionType::get(VoidTy, {Int32Ty}, false);
+            CalcWriteFn = Function::Create(CalcWriteFnTy, GlobalValue::ExternalLinkage, "print", M);
         }
 
         // Entry point for generating LLVM IR from the AST
