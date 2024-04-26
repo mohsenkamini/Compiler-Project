@@ -134,10 +134,8 @@ namespace
             Type *valType = val->getType();
             if (valType == Int1Ty) {
                 val = Builder.CreateZExt(val, Int32Ty, "bool_to_int");
-                CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
-            } else {
-                CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
             }
+            CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
         }
 
         virtual void visit(Expression &Node) override
