@@ -111,18 +111,47 @@ namespace
             // TODO: While and For
         }
 
-        virtual void visit(PrintStatement &Node) override
-        {
-            // Visit the right-hand side of the assignment and get its value.
+        // virtual void visit(PrintStatement &Node) override
+        // {
+        //     // Visit the right-hand side of the assignment and get its value.
+        //     Node.getExpr()->accept(*this);
+        //     Value *val = V;
+        //     CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
+        //     // if (Node.getExpr()->isBoolean()) {
+                
+        //     // }else{
+        //     //     CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
+        //     // }
+            
+        // }
+
+        virtual void visit(PrintStatement &Node) override {
+            // Visit the right-hand side of the expression and get its value.
             Node.getExpr()->accept(*this);
             Value *val = V;
-            CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
-            // if (Node.getExpr()->isBoolean()) {
-                
-            // }else{
-            //     CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
-            // }
-            
+
+            // Determine the type of 'val' and select the appropriate print function
+            Type *valType = val->getType();
+            Function *printFunction;
+            FunctionType *printFunctionType;
+
+            if (valType == Int1Ty) {
+                // If the value is a Boolean, use the Boolean print function
+                printFunction = CalcWriteFnBool;
+                printFunctionType = CalcWriteFnTyBool;
+                // Extend Boolean to match the expected integer print function signature (if needed)
+                val = Builder.CreateZExt(val, Int32Ty, "bool_to_int");
+            } else {
+                // Assume the value is an integer or other compatible types
+                printFunction = CalcWriteFn;
+                printFunctionType = CalcWriteFnTy;
+            }
+
+            // Ensure the print function is correctly set up in the module
+            printFunction = M->getOrInsertFunction("print", printFunctionType).getCallee();
+
+            // Create a call instruction to invoke the print function with the value.
+            Builder.CreateCall(printFunction, {val});
         }
 
         virtual void visit(Expression &Node) override
