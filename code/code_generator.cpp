@@ -109,7 +109,11 @@ namespace
                 PrintStatement *declaration = (PrintStatement *)&Node;
                 declaration->accept(*this);
             }
-            // TODO: While and For
+            else if (Node.getKind() == Statement::StatementType::While)
+            {
+                WhileStatement *declaration = (WhileStatement *)&Node;
+                declaration->accept(*this);
+            }
         }
 
         virtual void visit(PrintStatement &Node) override {
