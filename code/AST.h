@@ -223,7 +223,7 @@ public:
         Print,
         Declaration,
         Assignment,
-		Loop
+		While
     };
 
 private:
