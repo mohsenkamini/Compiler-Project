@@ -113,12 +113,12 @@ Base *Parser::parse()
             statements.push_back(statement);
             break;
         }
-        case Token::KW_for:
+        /*case Token::KW_for:
         {
             ForStatement *statement = parseFor();
             statements.push_back(statement);
             break;
-        }
+        }*/
         }
     }
     return new Base(statements);
