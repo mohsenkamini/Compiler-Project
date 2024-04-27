@@ -610,7 +610,7 @@ WhileStatement *Parser::parseWhile()
         Base *allWhileStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new WhileStatement(condition, allWhileStatements->getStatements(), Statement::StatementType::Loop);
+            return new WhileStatement(condition, allWhileStatements->getStatements(), Statement::StatementType::While);
         }
         else
 		{
