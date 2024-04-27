@@ -39,7 +39,7 @@ public:
 	virtual void visit(ElseIfStatement&) = 0;
 	virtual void visit(ElseStatement&) = 0;
     virtual void visit(PrintStatement&) = 0;
-	virtual void visit(ForStatement&) = 0;
+	//virtual void visit(ForStatement&) = 0;
 	virtual void visit(WhileStatement&) = 0;
 };
 
