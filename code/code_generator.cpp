@@ -411,7 +411,7 @@ namespace
 
         virtual void visit(WhileStatement &Node) override
         {
-             llvm::BasicBlock* WhileCondBB = llvm::BasicBlock::Create(M->getContext(), "while.cond", MainFn);
+            llvm::BasicBlock* WhileCondBB = llvm::BasicBlock::Create(M->getContext(), "while.cond", MainFn);
             // The basic block for the while body.
             llvm::BasicBlock* WhileBodyBB = llvm::BasicBlock::Create(M->getContext(), "while.body", MainFn);
             // The basic block after the while statement.

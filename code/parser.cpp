@@ -481,6 +481,12 @@ Base *Parser::parseStatement()
             statements.push_back(statement);
             break;
         }
+        case Token::KW_while:
+		{
+			WhileStatement* statement = parseWhile();
+			statements.push_back(statement);
+			break;
+		}
         default:
         {
             Error::UnexpectedToken(Tok);
