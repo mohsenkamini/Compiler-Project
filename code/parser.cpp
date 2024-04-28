@@ -630,7 +630,7 @@ WhileStatement *Parser::parseWhile()
     advance();
 }
 
-/*ForStatement *Parser::parseFor()
+ForStatement *Parser::parseFor()
 {
     advance();
     if (!Tok.is(Token::l_paren))
@@ -643,36 +643,48 @@ WhileStatement *Parser::parseWhile()
         Error::VariableExpected();
 
     }
+    llvm::StringRef name = Tok.getText();
+    advance();
 
-    
+    Expression *value = nullptr;
+    if (Tok.is(Token::equal))
+    {
+        advance();
+        value = parseExpression();
+        AssignStatement *assign = AssignStatement(new Expression(name), value);
     }
-    /*
-    // TODO: llvm::SmallVector<DecStatement *> states = parseDefine(); ? or assign
-    // if (states.size() == 0)
-    // {
-    //     return nullptr;
-    // }
-    // while (states.size() > 0)
-    // {
-    //     statements.push_back(states.back());
-    //     states.pop_back();
-    // }
-        
+    advance();
     check_for_semicolon();
     Expression *condition = parseExpression();
-    check_for_semicolon();
-    AssignStatement* assign = parseAssign(Tok.getText());
     advance();
+    check_for_semicolon();
+    if (!Tok.is(Token::identifier))
+    {
+        Error::VariableExpected();
+
+    }
+    llvm::StringRef name_up = Tok.getText();
+    Token current = Tok;
+    AssignStatement *assign_up = nullptr;
+    advance();
+    if (!Tok.isOneOf(Token::plus_plus, Token::minus_minus))
+    {
+        assign_up = parseAssign(name_up);
+    }
+    else
+    {
+        assign_up  = parseUnaryExpression(current);
+    }
     if (!Tok.is(Token::r_paren))
     {
         Error::RightParenthesisExpected();
     }
-    advance();
 
+    advance();
     if (Tok.is(Token::l_brace))
     {
         advance();
-        Base *allForStatements = parseStatement();
+        Base *allWForStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
             return new ForStatement(condition, allForStatements->getStatements(), Statement::StatementType::For);
@@ -688,4 +700,6 @@ WhileStatement *Parser::parseWhile()
     }
     advance();
 
-}*/
+
+}
+
