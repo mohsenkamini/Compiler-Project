@@ -630,7 +630,7 @@ WhileStatement *Parser::parseWhile()
     advance();
 }
 
-/*ForStatement *Parser::parseFor()
+ForStatement *Parser::parseFor()
 {
     advance();
     if (!Tok.is(Token::l_paren))
@@ -638,6 +638,15 @@ WhileStatement *Parser::parseWhile()
         Error::LeftParenthesisExpected();
     }
     advance();
+    if (!Tok.is(Token::identifier))
+    {
+        Error::VariableExpected();
+
+    }
+    
+    
+    }
+    /*
     // TODO: llvm::SmallVector<DecStatement *> states = parseDefine(); ? or assign
     // if (states.size() == 0)
     // {
@@ -666,7 +675,7 @@ WhileStatement *Parser::parseWhile()
         Base *allForStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new LoopStatement(condition, allForStatements->getStatements(), Statement::StatementType::Loop);
+            return new ForStatement(condition, allForStatements->getStatements(), Statement::StatementType::For);
         }
         else
 		{
