@@ -122,7 +122,12 @@ namespace
                 PrintStatement *declaration = (PrintStatement *)&Node;
                 declaration->accept(*this);
             }
-            // TODO: While and For
+            else if (Node.getKind() == Statement::StatementType::While)
+            {
+                WhileStatement *declaration = (WhileStatement *)&Node;
+                declaration->accept(*this);
+            }
+            // TODO:For
         };
 
         virtual void visit(BooleanOp &Node) override
@@ -256,8 +261,14 @@ namespace
             }
         };
 
-        virtual void visit(LoopStatement &Node) override{
-            // TODO: Implement
+        virtual void visit(WhileStatement &Node) override{
+            Node.getCondition()->accept(*this);
+
+            llvm::SmallVector<Statement* > stmts = Node.getStatements();
+            for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
+            {
+                (*I)->accept(*this);
+            }
         };
     };
 }

@@ -18,7 +18,8 @@ class DecStatement;             // declaration statement like int a;
 class ElseIfStatement;
 class ElseStatement;
 class AssignStatement;          // assignment statement like a = 3;
-class LoopStatement;
+class ForStatement;
+class WhileStatement;
 // class afterCheckStatement;
 
 
@@ -38,7 +39,8 @@ public:
 	virtual void visit(ElseIfStatement&) = 0;
 	virtual void visit(ElseStatement&) = 0;
     virtual void visit(PrintStatement&) = 0;
-	virtual void visit(LoopStatement&) = 0;
+	//virtual void visit(ForStatement&) = 0;
+	virtual void visit(WhileStatement&) = 0;
 };
 
 class AST {
@@ -221,7 +223,8 @@ public:
         Print,
         Declaration,
         Assignment,
-		Loop
+		While,
+		For
     };
 
 private:
@@ -426,14 +429,14 @@ public:
     }
 };
 
-class LoopStatement : public Statement {
+class WhileStatement : public Statement {
 
 private:
 	Expression* condition;
 	llvm::SmallVector<Statement*> statements;
 
 public:
-	LoopStatement(Expression* condition, llvm::SmallVector<Statement*> statements, StatementType type) : condition(condition), statements(statements), Statement(type) { }
+	WhileStatement(Expression* condition, llvm::SmallVector<Statement*> statements, StatementType type) : condition(condition), statements(statements), Statement(type) { }
 
 	Expression* getCondition()
 	{
@@ -450,5 +453,7 @@ public:
 		V.visit(*this);
 	}
 };
+
+
 
 #endif

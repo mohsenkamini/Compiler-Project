@@ -109,16 +109,16 @@ Base *Parser::parse()
         }
         case Token::KW_while:
         {
-            LoopStatement *statement = parseWhile();
+            WhileStatement *statement = parseWhile();
             statements.push_back(statement);
             break;
         }
-        case Token::KW_for:
+        /*case Token::KW_for:
         {
-            LoopStatement *statement = parseFor();
+            ForStatement *statement = parseFor();
             statements.push_back(statement);
             break;
-        }
+        }*/
         }
     }
     return new Base(statements);
@@ -481,6 +481,12 @@ Base *Parser::parseStatement()
             statements.push_back(statement);
             break;
         }
+        case Token::KW_while:
+		{
+			WhileStatement* statement = parseWhile();
+			statements.push_back(statement);
+			break;
+		}
         default:
         {
             Error::UnexpectedToken(Tok);
@@ -587,7 +593,7 @@ ElseIfStatement *Parser::parseElseIf()
     return new ElseIfStatement(condition, allIfStatements->getStatements(), Statement::StatementType::ElseIf);
 }
 
-LoopStatement *Parser::parseWhile()
+WhileStatement *Parser::parseWhile()
 {
     advance();
     if (!Tok.is(Token::l_paren))
@@ -610,7 +616,7 @@ LoopStatement *Parser::parseWhile()
         Base *allWhileStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new LoopStatement(condition, allWhileStatements->getStatements(), Statement::StatementType::Loop);
+            return new WhileStatement(condition, allWhileStatements->getStatements(), Statement::StatementType::While);
         }
         else
 		{
@@ -624,7 +630,7 @@ LoopStatement *Parser::parseWhile()
     advance();
 }
 
-LoopStatement *Parser::parseFor()
+/*ForStatement *Parser::parseFor()
 {
     advance();
     if (!Tok.is(Token::l_paren))
@@ -632,6 +638,15 @@ LoopStatement *Parser::parseFor()
         Error::LeftParenthesisExpected();
     }
     advance();
+    if (!Tok.is(Token::identifier))
+    {
+        Error::VariableExpected();
+
+    }
+
+    
+    }
+    /*
     // TODO: llvm::SmallVector<DecStatement *> states = parseDefine(); ? or assign
     // if (states.size() == 0)
     // {
@@ -660,7 +675,7 @@ LoopStatement *Parser::parseFor()
         Base *allForStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new LoopStatement(condition, allForStatements->getStatements(), Statement::StatementType::Loop);
+            return new ForStatement(condition, allForStatements->getStatements(), Statement::StatementType::For);
         }
         else
 		{
@@ -673,4 +688,4 @@ LoopStatement *Parser::parseFor()
     }
     advance();
 
-}
+}*/

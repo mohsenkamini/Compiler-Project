@@ -54,8 +54,8 @@ public:
     Expression *parseSign();
     Expression *parsePower();
     Expression *parseFactor();
-    LoopStatement *parseFor();
-    LoopStatement *parseWhile();
+    //ForStatement *parseFor();
+    WhileStatement *parseWhile();
     AssignStatement *parseAssign(llvm::StringRef name);
     llvm::SmallVector<DecStatement *> parseDefine(Token::TokenKind token_kind);
     void check_for_semicolon();
