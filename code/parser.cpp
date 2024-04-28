@@ -630,7 +630,7 @@ WhileStatement *Parser::parseWhile()
     advance();
 }
 
-ForStatement *Parser::parseFor()
+/*ForStatement *Parser::parseFor()
 {
     advance();
     if (!Tok.is(Token::l_paren))
@@ -643,7 +643,7 @@ ForStatement *Parser::parseFor()
         Error::VariableExpected();
 
     }
-    
+
     
     }
     /*
