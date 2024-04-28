@@ -442,6 +442,10 @@ namespace
             // Set the insertion point to the block after the while loop.
             Builder.SetInsertPoint(AfterWhileBB);
         }
+        virtual void visit(ForStatement &Node) override
+        {
+            //TODO
+        }
     };
     
 }; // namespace

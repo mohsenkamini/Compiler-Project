@@ -256,8 +256,8 @@ namespace
         virtual void visit(ForStatement &Node) override{
             Node.getCondition()->accept(*this);
             AssignStatement * initial_assign = Node.getInitialAssign();
-            ((Expression *)Node.getLValue())->accept(*this);
-            ((Expression *)Node.getRValue())->accept(*this);
+            ((Expression *)initial_assign.getLValue())->accept(*this);
+            ((Expression *)initial_assign.getRValue())->accept(*this);
             AssignStatement * update_assign = Node.getUpdateAssign();
             ((Expression *)Node.getLValue())->accept(*this);
             ((Expression *)Node.getRValue())->accept(*this);

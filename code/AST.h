@@ -462,7 +462,7 @@ private:
 	AssignStatement *initial_assign;
 	AssignStatement *update_assign;
 public:
-	ForStatement(Expression* condition,llvm::SmallVector<Statement*> statements,AssignStatement *initial_assign,AssignStatement *update_assign, Statement type : condition(condition), statements(statements),initial_assign(initial_assign),update_assign(update_assign) , Statement(type)){}
+	ForStatement(Expression* condition,llvm::SmallVector<Statement*> statements,AssignStatement *initial_assign,AssignStatement *update_assign, Statement type ) : condition(condition), statements(statements),initial_assign(initial_assign),update_assign(update_assign) , Statement(type){}
 	Expression* getCondition()
 	{
 		return condition;

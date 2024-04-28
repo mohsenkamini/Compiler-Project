@@ -651,7 +651,7 @@ ForStatement *Parser::parseFor()
     {
         advance();
         value = parseExpression();
-        AssignStatement *assign = AssignStatement(new Expression(name), value);
+        AssignStatement *assign = new AssignStatement(new Expression(name), value);
     }
     advance();
     check_for_semicolon();
@@ -684,7 +684,7 @@ ForStatement *Parser::parseFor()
     if (Tok.is(Token::l_brace))
     {
         advance();
-        Base *allWForStatements = parseStatement();
+        Base *allForStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
             return new ForStatement(condition, allForStatements->getStatements(), Statement::StatementType::For);
