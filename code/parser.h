@@ -54,7 +54,7 @@ public:
     Expression *parseSign();
     Expression *parsePower();
     Expression *parseFactor();
-    //ForStatement *parseFor();
+    ForStatement *parseFor();
     WhileStatement *parseWhile();
     AssignStatement *parseAssign(llvm::StringRef name);
     llvm::SmallVector<DecStatement *> parseDefine(Token::TokenKind token_kind);

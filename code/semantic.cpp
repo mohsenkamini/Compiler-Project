@@ -127,6 +127,12 @@ namespace
                 WhileStatement *declaration = (WhileStatement *)&Node;
                 declaration->accept(*this);
             }
+            else if (Node.getKind() == Statement::StatementType::For)
+            {
+                ForStatement *declaration = (ForStatement *)&Node;
+                declaration->accept(*this);
+            }
+            
             // TODO:For
         };
 
@@ -241,13 +247,27 @@ namespace
 
         virtual void visit(WhileStatement &Node) override{
             Node.getCondition()->accept(*this);
-
             llvm::SmallVector<Statement* > stmts = Node.getStatements();
             for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
             {
                 (*I)->accept(*this);
             }
         };
+        virtual void visit(ForStatement &Node) override{
+            Node.getCondition()->accept(*this);
+            AssignStatement * initial_assign = Node.getInitialAssign();
+            ((Expression *)Node.getLValue())->accept(*this);
+            ((Expression *)Node.getRValue())->accept(*this);
+            AssignStatement * update_assign = Node.getUpdateAssign();
+            ((Expression *)Node.getLValue())->accept(*this);
+            ((Expression *)Node.getRValue())->accept(*this);
+            llvm::SmallVector<Statement* > stmts = Node.getStatements();
+            for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
+            {
+                (*I)->accept(*this);
+            }
+        };
+
     };
 }
 

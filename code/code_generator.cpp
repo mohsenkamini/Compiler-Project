@@ -443,6 +443,7 @@ namespace
             Builder.SetInsertPoint(AfterWhileBB);
         }
     };
+    
 }; // namespace
 
 void CodeGen::compile(AST *Tree)
