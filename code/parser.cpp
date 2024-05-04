@@ -113,12 +113,12 @@ Base *Parser::parse()
             statements.push_back(statement);
             break;
         }
-        /*case Token::KW_for:
+        case Token::KW_for:
         {
             ForStatement *statement = parseFor();
             statements.push_back(statement);
             break;
-        }*/
+        }
         }
     }
     return new Base(statements);
@@ -487,6 +487,12 @@ Base *Parser::parseStatement()
 			statements.push_back(statement);
 			break;
 		}
+        case Token::KW_for:
+        {
+            ForStatement* statement = parseFor();
+            statements.push_back(statement);
+            break;
+        }
         default:
         {
             Error::UnexpectedToken(Tok);
@@ -630,52 +636,64 @@ WhileStatement *Parser::parseWhile()
     advance();
 }
 
-/*ForStatement *Parser::parseFor()
+ForStatement *Parser::parseFor()
 {
     advance();
-    if (!Tok.is(Token::l_paren))
+    if (!Tok.is(Token::l_paren))                // for(i = 0;i<10;i++)
     {
         Error::LeftParenthesisExpected();
     }
-    advance();
+    advance();                                  //i = 0;i<10;i++)
     if (!Tok.is(Token::identifier))
     {
         Error::VariableExpected();
 
     }
-
-    
-    }
-    /*
-    // TODO: llvm::SmallVector<DecStatement *> states = parseDefine(); ? or assign
-    // if (states.size() == 0)
-    // {
-    //     return nullptr;
-    // }
-    // while (states.size() > 0)
-    // {
-    //     statements.push_back(states.back());
-    //     states.pop_back();
-    // }
-        
+    llvm::StringRef name = Tok.getText();
+    advance();                                  //= 0;i<10;i++)
+    AssignStatement *assign = parseAssign(name);
+    //Expression *value = nullptr;
+    /*if (Tok.is(Token::equal))
+    {
+        advance();                              //0;i<10;i++)
+        value = parseExpression();
+        AssignStatement *assign = new AssignStatement(new Expression(name), value);
+    }*/
+    //advance();
     check_for_semicolon();
     Expression *condition = parseExpression();
+    //advance();
     check_for_semicolon();
-    AssignStatement* assign = parseAssign(Tok.getText());
+    if (!Tok.is(Token::identifier))
+    {
+        Error::VariableExpected();
+
+    }
+    llvm::StringRef name_up = Tok.getText();
+    Token current = Tok;
+    AssignStatement *assign_up = nullptr;
     advance();
+    if (!Tok.isOneOf(Token::plus_plus, Token::minus_minus))
+    {
+        assign_up = parseAssign(name_up);
+    }
+    else
+    {
+        assign_up  = parseUnaryExpression(current);
+    }
     if (!Tok.is(Token::r_paren))
     {
         Error::RightParenthesisExpected();
     }
-    advance();
 
+    advance();
     if (Tok.is(Token::l_brace))
     {
         advance();
         Base *allForStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new ForStatement(condition, allForStatements->getStatements(), Statement::StatementType::For);
+            return new ForStatement(condition, allForStatements->getStatements(),assign,assign_up, Statement::StatementType::For);
         }
         else
 		{
@@ -688,4 +706,6 @@ WhileStatement *Parser::parseWhile()
     }
     advance();
 
-}*/
+
+}
+
