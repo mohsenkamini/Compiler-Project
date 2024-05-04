@@ -133,7 +133,7 @@ namespace
                 declaration->accept(*this);
             }
             
-            // TODO:For
+            
         };
 
         virtual void visit(BooleanOp &Node) override
@@ -253,14 +253,23 @@ namespace
                 (*I)->accept(*this);
             }
         };
+        
         virtual void visit(ForStatement &Node) override{
-            Node.getCondition()->accept(*this);
             AssignStatement * initial_assign = Node.getInitialAssign();
-            ((Expression *)initial_assign.getLValue())->accept(*this);
-            ((Expression *)initial_assign.getRValue())->accept(*this);
+            /*if(initial_assign == nullptr){
+                exit(0);
+            }*/
+            (initial_assign->getLValue())->accept(*this);
+            (initial_assign->getRValue())->accept(*this);
+            Node.getCondition()->accept(*this);
+            
             AssignStatement * update_assign = Node.getUpdateAssign();
-            ((Expression *)Node.getLValue())->accept(*this);
-            ((Expression *)Node.getRValue())->accept(*this);
+            if(update_assign == nullptr){
+                exit(0);
+            }
+            (update_assign->getLValue())->accept(*this);
+            (update_assign->getRValue())->accept(*this);
+
             llvm::SmallVector<Statement* > stmts = Node.getStatements();
             for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
             {

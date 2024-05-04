@@ -444,7 +444,63 @@ namespace
         }
         virtual void visit(ForStatement &Node) override
         {
-            //TODO
+            llvm::BasicBlock* ForCondBB = llvm::BasicBlock::Create(M->getContext(), "for.cond", MainFn);
+            // The basic block for the while body.
+            llvm::BasicBlock* ForBodyBB = llvm::BasicBlock::Create(M->getContext(), "for.body", MainFn);
+            // The basic block after the while statement.
+            llvm::BasicBlock* AfterForBB = llvm::BasicBlock::Create(M->getContext(), "after.for", MainFn);
+
+            llvm::BasicBlock* ForUpdateBB = llvm::BasicBlock::Create(M->getContext(), "for.update", MainFn);
+
+            AssignStatement * initial_assign = Node.getInitialAssign();
+            ((Expression *)initial_assign->getRValue())->accept(*this);
+            Value *val = V;
+
+            // Get the name of the variable being assigned
+            auto varName = ((Expression *)initial_assign->getLValue())->getValue();
+
+            // Create a store instruction to assign the value to the variable
+            Builder.CreateStore(val, nameMap[varName]);
+
+
+            // Branch to the condition block.
+            Builder.CreateBr(ForCondBB);
+
+            // Set the insertion point to the condition block.
+            Builder.SetInsertPoint(ForCondBB);
+
+            // Visit the condition expression and create the conditional branch.
+            Node.getCondition()->accept(*this);
+            Value* Cond = V;
+            Builder.CreateCondBr(Cond, ForBodyBB, AfterForBB);
+
+            // Set the insertion point to the body block.
+            Builder.SetInsertPoint(ForBodyBB);
+
+            llvm::SmallVector<Statement* > stmts = Node.getStatements();
+            for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
+            {
+                (*I)->accept(*this);
+            }
+
+            Builder.CreateBr(ForUpdateBB);
+
+            Builder.SetInsertPoint(ForUpdateBB);
+
+            AssignStatement * update_assign = Node.getUpdateAssign();
+            ((Expression *)update_assign->getRValue())->accept(*this);
+            val = V;
+
+            // Get the name of the variable being assigned
+            varName = ((Expression *)update_assign->getLValue())->getValue();
+
+            // Create a store instruction to assign the value to the variable
+            Builder.CreateStore(val, nameMap[varName]);
+
+            // Branch back to the condition block.
+            Builder.CreateBr(ForCondBB);
+            // Set the insertion point to the block after the while loop.
+            Builder.SetInsertPoint(AfterForBB);
         }
     };
     

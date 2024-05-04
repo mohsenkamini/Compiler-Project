@@ -113,12 +113,12 @@ Base *Parser::parse()
             statements.push_back(statement);
             break;
         }
-        /*case Token::KW_for:
+        case Token::KW_for:
         {
             ForStatement *statement = parseFor();
             statements.push_back(statement);
             break;
-        }*/
+        }
         }
     }
     return new Base(statements);
@@ -487,6 +487,12 @@ Base *Parser::parseStatement()
 			statements.push_back(statement);
 			break;
 		}
+        case Token::KW_for:
+        {
+            ForStatement* statement = parseFor();
+            statements.push_back(statement);
+            break;
+        }
         default:
         {
             Error::UnexpectedToken(Tok);
@@ -633,30 +639,30 @@ WhileStatement *Parser::parseWhile()
 ForStatement *Parser::parseFor()
 {
     advance();
-    if (!Tok.is(Token::l_paren))
+    if (!Tok.is(Token::l_paren))                // for(i = 0;i<10;i++)
     {
         Error::LeftParenthesisExpected();
     }
-    advance();
+    advance();                                  //i = 0;i<10;i++)
     if (!Tok.is(Token::identifier))
     {
         Error::VariableExpected();
 
     }
     llvm::StringRef name = Tok.getText();
-    advance();
-
-    Expression *value = nullptr;
-    if (Tok.is(Token::equal))
+    advance();                                  //= 0;i<10;i++)
+    AssignStatement *assign = parseAssign(name);
+    //Expression *value = nullptr;
+    /*if (Tok.is(Token::equal))
     {
-        advance();
+        advance();                              //0;i<10;i++)
         value = parseExpression();
         AssignStatement *assign = new AssignStatement(new Expression(name), value);
-    }
-    advance();
+    }*/
+    //advance();
     check_for_semicolon();
     Expression *condition = parseExpression();
-    advance();
+    //advance();
     check_for_semicolon();
     if (!Tok.is(Token::identifier))
     {
@@ -687,7 +693,7 @@ ForStatement *Parser::parseFor()
         Base *allForStatements = parseStatement();
         if(!consume(Token::r_brace))
         {
-            return new ForStatement(condition, allForStatements->getStatements(), Statement::StatementType::For);
+            return new ForStatement(condition, allForStatements->getStatements(),assign,assign_up, Statement::StatementType::For);
         }
         else
 		{
