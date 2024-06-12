@@ -42,13 +42,10 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement)
             Statement *newStatement = statement;
             if (statement.getKind() == Statement::StatementType::Assignment)
             {
-                // TODO: Nested expressions
-                Expression *right = statement.getRValue();
-                if (right.isVariable() && right.getValue() == forStatement.getInitialAssign().getLValue().getValue())
-                {
-                    Expression *index = new Expression(i);
-                    newStatement = new BinaryOp(BinaryOp::Plus, right, index)
-                }
+                Assignment *assignment = (Assignment *)statement;
+                Expression *right = assignment->getRValue();
+                Expression *newRight = updateExpression(right, forStatement->getInitialAssign().getLValue().getValue(), i);
+                newStatement = new Assignment(assignment->getLValue(), newRight);
             }
             unrolledStatements.push_back(newStatement);
         }
