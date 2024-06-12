@@ -1,6 +1,5 @@
 #include "optimizer.h"
 
-
 Expression *updateExpression(Expression *expression, llvm::StringRef iterator, int increase)
 {
     if (expression->isVariable() && expression->getValue() == iterator)
@@ -24,6 +23,79 @@ Expression *updateExpression(Expression *expression, llvm::StringRef iterator, i
     return expression;
 }
 
+Statement *updateStatement(Statement *statement, llvm::StringRef iterator, int increase)
+{
+    if (statement.getKind() == Statement::StatementType::Assignment)
+    {
+        Assignment *assignment = (Assignment *)statement;
+        Expression *right = assignment->getRValue();
+        Expression *newRight = updateExpression(right, iterator, increase);
+        return new Assignment(assignment->getLValue(), newRight);
+    }
+    if (statement->getKind() == Statement::StatementType::Declaration)
+    {
+        Declaration *declaration = (Declaration *)statement;
+        Expression *right = declaration->getRValue();
+        Expression *newRight = updateExpression(right, iterator, increase);
+        return new Declaration(declaration->getLValue(), newRight);
+    }
+    if (statement->getKind() == Statement::StatementType::If)
+    {
+        IfStatement *ifStatement = (IfStatement *)statement;
+
+        // Update condition
+        Expression *condition = ifStatement->getCondition();
+        Expression *newCondition = updateExpression(condition, iterator, increase);
+
+        // Update body
+        llvm::SmallVector<Statement *> ifBody = ifStatement->getStatements();
+        llvm::SmallVector<Statement *> newIfBody;
+        for (Statement *s : ifBody)
+        {
+            Statement *newIfStatement = updateStatement(s, iterator, increase);
+            newIfBody.push_back(newIfStatement);
+        }
+
+        // Update else if
+        llvm::SmallVector<ElseIfStatement *> newElseIfStatements;
+        if (ifStatement->HasElseIf())
+        {
+            llvm::SmallVector<ElseIfStatement *> elseIfStatements = ifStatement->getElseIfStatements();
+            for (ElseIfStatement *elseIfStatement : elseIfStatements)
+            {
+                Expression *elseIfCondition = elseIfStatement->getCondition();
+                Expression *newElseIfCondition = updateExpression(elseIfCondition, iterator, increase);
+                llvm::SmallVector<Statement *> elseIfBody = elseIfStatement->getStatements();
+                llvm::SmallVector<Statement *> newElseIfBody;
+                for (Statement *s : elseIfBody)
+                {
+                    Statement *newElseIfStatement = updateStatement(s, iterator, increase);
+                    newElseIfBody.push_back(newElseIfStatement);
+                }
+                newElseIfStatements.push_back(new ElseIfStatement(newElseIfCondition, newElseIfBody, Statement::StatementType::ElseIf));
+            }
+        }
+
+        // Update else
+        ElseStatement *newElseStatement;
+        if (ifStatement->HasElse())
+        {
+            ElseStatement *elseStatement = ifStatement->getElseStatement();
+            llvm::SmallVector<Statement *> newElseBody;
+            llvm::SmallVector<Statement *> elseBody = elseStatement->getStatements();
+            for (Statement *s : elseBody)
+            {
+                Statement *newElseBodyStatement = updateStatement(s, iterator, increase);
+                newElseBody.push_back(newElseBodyStatement);
+            }
+            newElseStatement = new ElseStatement(newElseBody, Statement::StatementType::Else);
+        }
+
+        return new IfStatement(newCondition, newIfBody, newElseIfStatements, newElseStatement, ifStatement->HasElseIf(), ifStatement->HasElse(), Statement::StatementType::If);
+    }
+    return statement;
+}
+
 llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement)
 {
     llvm::SmallVector<Statement *> unrolledStatements;
@@ -39,15 +111,9 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement)
     {
         for (Statement *statement : body)
         {
-            Statement *newStatement = statement;
-            if (statement.getKind() == Statement::StatementType::Assignment)
-            {
-                Assignment *assignment = (Assignment *)statement;
-                Expression *right = assignment->getRValue();
-                Expression *newRight = updateExpression(right, forStatement->getInitialAssign().getLValue().getValue(), i);
-                newStatement = new Assignment(assignment->getLValue(), newRight);
-            }
+            Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign().getLValue().getValue(), i);
             unrolledStatements.push_back(newStatement);
         }
     }
+    return unrolledStatements;
 }
