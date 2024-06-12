@@ -4,7 +4,7 @@ Expression *updateExpression(Expression *expression, llvm::StringRef iterator, i
 {
     if (expression->isVariable() && expression->getValue() == iterator)
     {
-        return new BinaryOp(BinaryOp::Plus, iterator, new Expression(increase));
+        return new BinaryOp(BinaryOp::Plus, new Expression(iterator), new Expression(increase));
     }
     if (expression->isBinaryOp())
     {
@@ -25,19 +25,19 @@ Expression *updateExpression(Expression *expression, llvm::StringRef iterator, i
 
 Statement *updateStatement(Statement *statement, llvm::StringRef iterator, int increase)
 {
-    if (statement.getKind() == Statement::StatementType::Assignment)
+    if (statement->getKind() == Statement::StatementType::Assignment)
     {
-        Assignment *assignment = (Assignment *)statement;
+        AssignStatement *assignment = (AssignStatement *)statement;
         Expression *right = assignment->getRValue();
         Expression *newRight = updateExpression(right, iterator, increase);
-        return new Assignment(assignment->getLValue(), newRight);
+        return new AssignStatement(assignment->getLValue(), newRight);
     }
     if (statement->getKind() == Statement::StatementType::Declaration)
     {
-        Declaration *declaration = (Declaration *)statement;
+        DecStatement *declaration = (DecStatement *)statement;
         Expression *right = declaration->getRValue();
         Expression *newRight = updateExpression(right, iterator, increase);
-        return new Declaration(declaration->getLValue(), newRight);
+        return new DecStatement(declaration->getLValue(), newRight);
     }
     if (statement->getKind() == Statement::StatementType::If)
     {
@@ -102,16 +102,16 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement)
     llvm::SmallVector<Statement *> body = forStatement->getStatements();
 
     // Get for variables and constants
-    int initialIterator = forStatement->getInitialAssign().getRValue().getNumber();
-    int conditionValue = forStatement->getCondition().getBooleanOp().getRight().getNumber();
-    int updateValue = forStatement->getUpdateAssign().getRValue().getNumber();
+    int initialIterator = forStatement->getInitialAssign()->getRValue()->getNumber();
+    int conditionValue = forStatement->getCondition()->getBooleanOp()->getRight()->getNumber();
+    int updateValue = forStatement->getUpdateAssign()->getRValue()->getNumber();
 
     // Simulate the for in the program. Iterate on body and push back new statements with updated indices
     for (int i = initialIterator; i < conditionValue; i += updateValue)
     {
         for (Statement *statement : body)
         {
-            Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign().getLValue().getValue(), i);
+            Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
             unrolledStatements.push_back(newStatement);
         }
     }

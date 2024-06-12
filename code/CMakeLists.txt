@@ -5,5 +5,6 @@ add_executable (compiler
   parser.cpp
   semantic.cpp
   error.cpp
+  optimizer.cpp
   )
 target_link_libraries(compiler PRIVATE ${llvm_libs})
