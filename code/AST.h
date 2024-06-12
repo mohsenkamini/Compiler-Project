@@ -97,6 +97,18 @@ public:
 		return false;
 	}
 
+	bool isBinaryOp() {
+		if (Type == ExpressionType::BinaryOpType)
+			return true;
+		return false;
+	}
+
+	bool isBooleanOp() {
+		if (Type == ExpressionType::BooleanOpType)
+			return true;
+		return false;
+	}
+
 	llvm::StringRef getValue() {
 		return Value;
 	}
