@@ -1,5 +1,29 @@
 #include "optimizer.h"
 
+
+Expression *updateExpression(Expression *expression, llvm::StringRef iterator, int increase)
+{
+    if (expression->isVariable() && expression->getValue() == iterator)
+    {
+        return new BinaryOp(BinaryOp::Plus, iterator, new Expression(increase));
+    }
+    if (expression->isBinaryOp())
+    {
+        BinaryOp *binaryOp = (BinaryOp *)expression;
+        Expression *left = updateExpression(binaryOp->getLeft(), iterator, increase);
+        Expression *right = updateExpression(binaryOp->getRight(), iterator, increase);
+        return new BinaryOp(binaryOp->getOperator(), left, right);
+    }
+    if (expression->isBooleanOp())
+    {
+        BooleanOp *booleanOp = (BooleanOp *)expression;
+        Expression *left = updateExpression(booleanOp->getLeft(), iterator, increase);
+        Expression *right = updateExpression(booleanOp->getRight(), iterator, increase);
+        return new BooleanOp(booleanOp->getOperator(), left, right);
+    }
+    return expression;
+}
+
 llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement)
 {
     llvm::SmallVector<Statement *> unrolledStatements;
