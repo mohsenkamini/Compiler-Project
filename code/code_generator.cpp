@@ -447,7 +447,7 @@ namespace
         {
             // change this later...
             if (1) {
-                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(Node);
+                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node);
                 for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
                     {
                         (*I)->accept(*this);
