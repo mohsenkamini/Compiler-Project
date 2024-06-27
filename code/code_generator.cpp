@@ -1,4 +1,5 @@
 #include "code_generator.h"
+#include "optimizer.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
@@ -444,6 +445,15 @@ namespace
         }
         virtual void visit(ForStatement &Node) override
         {
+            // change this later...
+            if (1) {
+                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(Node);
+                for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
+                    {
+                        (*I)->accept(*this);
+                    }
+                return;
+            }
             llvm::BasicBlock* ForCondBB = llvm::BasicBlock::Create(M->getContext(), "for.cond", MainFn);
             // The basic block for the while body.
             llvm::BasicBlock* ForBodyBB = llvm::BasicBlock::Create(M->getContext(), "for.body", MainFn);

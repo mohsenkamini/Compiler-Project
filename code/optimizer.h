@@ -6,7 +6,7 @@
 
 Expression *updateExpression(Expression *expression, llvm::StringRef iterator, int increase);
 Statement *updateStatement(Statement *statement, llvm::StringRef iterator, int increase);
-llvm::SmallVector<Statement*> completeUnroll(ForStatement* forStatement);
+llvm::SmallVector<Statement*> completeUnroll(ForStatement &forStatement);
     
 
 #endif
