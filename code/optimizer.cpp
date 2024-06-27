@@ -105,7 +105,7 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement &forStatement)
     int initialIterator = forStatement.getInitialAssign()->getRValue()->getNumber();
     BooleanOp *condition_boolean_op = (BooleanOp *) forStatement.getCondition();
     int conditionValue = condition_boolean_op->getRight()->getNumber();
-    int updateValue = forStatement.getUpdateAssign()->getRValue()->getNumber();
+    int updateValue = ((BinaryOp *) forStatement.getUpdateAssign()->getRValue())->getRight()->getNumber();
 
     // Simulate the for in the program. Iterate on body and push back new statements with updated indices
     for (int i = initialIterator; i < conditionValue; i += updateValue)
