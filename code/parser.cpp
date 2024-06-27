@@ -122,6 +122,7 @@ Base *Parser::parse()
             {
                 statements.push_back(s);
             }
+            //statements.push_back(statement);
             break;
         }
         }

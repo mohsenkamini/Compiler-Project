@@ -1,16 +1,6 @@
 int x = 0;
 int i, j;
-for (i = 1; i <= 5; i++) {
-    for (j = 1; j <= 5; j++) {
-        if (j % 3 == 1) {
-            x += j;
-        }
-        else if (j % 3 == 2) {
-            x += i;
-        }
-        else {
-            x += i + j;
-        }
-    }
+for (i = 0; i <= 5; i++) {
+  x = i + 2;
 }
 print(x);
