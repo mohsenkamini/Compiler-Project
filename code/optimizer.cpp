@@ -33,6 +33,7 @@ Statement *updateStatement(Statement *statement, llvm::StringRef iterator, int i
 
 llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement)
 {
+    int k = 5;
     llvm::SmallVector<Statement *> unrolledStatements;
     llvm::SmallVector<Statement *> body = forStatement->getStatements();
 
@@ -40,27 +41,61 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement)
     int initialIterator = forStatement->getInitialAssign()->getRValue()->getNumber();
     BooleanOp *condition_boolean_op = (BooleanOp *)forStatement->getCondition();
     int conditionValue = condition_boolean_op->getRight()->getNumber();
+    if(condition_boolean_op->getOperator() == BooleanOp::LessEqual){
+        conditionValue++;
+    }
     int updateValue = ((BinaryOp *)forStatement->getUpdateAssign()->getRValue())->getRight()->getNumber();
-
-    // Simulate the for in the program. Iterate on body and push back new statements with updated indices
-    if (condition_boolean_op->getOperator() == BooleanOp::LessEqual) {
-        for (int i = initialIterator; i <= conditionValue; i += updateValue)
-        {
-            for (Statement *statement : body)
-            {
-                Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
-                unrolledStatements.push_back(newStatement);
+    if(k>0){
+        llvm::SmallVector<Statement *> newForBody;
+        for(Statement *statement : body){
+            for(int i = 0; i < k; i++){
+                AssignStatement* assignStatement = (AssignStatement *)statement;
+                Expression* rValue = assignStatement->getRValue();
+                if(rValue->isBinaryOp()){
+                    BinaryOp* binaryOp = (BinaryOp *)rValue;
+                    if(binaryOp->getLeft()->isVariable() && binaryOp->getLeft()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
+                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
+                        newForBody.push_back(newStatement);
+                    }else if(binaryOp->getRight()->isVariable() && binaryOp->getRight()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
+                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
+                        newForBody.push_back(newStatement);
+                    }else{
+                        newForBody.push_back(statement);
+                    
+                    }
+                }else if(rValue->isBooleanOp()){
+                    BooleanOp* booleanOp = (BooleanOp *)rValue;
+                    if(booleanOp->getLeft()->isVariable() && booleanOp->getLeft()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
+                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
+                        newForBody.push_back(newStatement);
+                    }else if(booleanOp->getRight()->isVariable() && booleanOp->getRight()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
+                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
+                        newForBody.push_back(newStatement);
+                    }else{
+                        newForBody.push_back(statement);
+                    }
+                }else{
+                    if(rValue->isVariable() && rValue->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
+                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
+                        newForBody.push_back(newStatement);
+                    }else{
+                        newForBody.push_back(statement);
+                    }
+                }
             }
         }
+        AssignStatement* newAssignStatement;
+        if(assignStatement->getLValue()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
+            newAssignStatement = new AssignStatement(assignStatement->getLValue(), new BinaryOp(BinaryOp::Plus, new Expression(forStatement->getInitialAssign()->getLValue()->getValue()), new Expression(k)));
+        ForStatement* newForStatement = new ForStatement(newAssignStatement, forStatement->getCondition(), forStatement->getUpdateAssign(), newForBody);
+        unrolledStatements.push_back(newForStatement);
+        return unrolledStatements;
     }
-    else if (condition_boolean_op->getOperator() == BooleanOp::Less) {
-        for (int i = initialIterator; i < conditionValue; i += updateValue)
+    for (int i = initialIterator; i < conditionValue; i += updateValue){
+        for (Statement *statement : body)
         {
-            for (Statement *statement : body)
-            {
-                Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
-                unrolledStatements.push_back(newStatement);
-            }
+            Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
+            unrolledStatements.push_back(newStatement);
         }
     }
 
