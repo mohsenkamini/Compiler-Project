@@ -414,6 +414,14 @@ namespace
 
         virtual void visit(WhileStatement &Node) override
         {
+            if (optimize) {
+                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node);
+                for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
+                    {
+                        (*I)->accept(*this);
+                    }
+                return;
+            }
             llvm::BasicBlock* WhileCondBB = llvm::BasicBlock::Create(M->getContext(), "while.cond", MainFn);
             // The basic block for the while body.
             llvm::BasicBlock* WhileBodyBB = llvm::BasicBlock::Create(M->getContext(), "while.body", MainFn);
