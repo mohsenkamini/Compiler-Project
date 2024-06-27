@@ -66,3 +66,34 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement)
 
     return unrolledStatements;
 }
+
+
+llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement)
+{
+    llvm::SmallVector<Statement *> unrolledStatements;
+    llvm::SmallVector<Statement *> body = whileStatement->getStatements();
+    BooleanOp *condition_boolean_op = (BooleanOp *)whileStatement->getCondition();
+    int conditionValue = condition_boolean_op->getRight()->getNumber();
+    if(condition_boolean_op->getOperator() == BooleanOp::LessEqual){
+        conditionValue++;
+    }
+    llvm::StringRef iteratorVar = condition_boolean_op->getLeft()->getValue();
+    int initialIterator = 0;
+    int updateValue = 0;
+    // find initial value of iterator from the body
+    for(Statement *statement : body){
+        if(statement->getLValue()->getValue() == iteratorVar){
+            initialIterator = assignStatement->getRValue()->getNumber();
+            updateValue = ((BinaryOp *)assignStatement->getRValue())->getRight()->getNumber();
+            break;
+        }
+    }    
+    for (int i = initialIterator; i < conditionValue; i += updateValue){
+        for (Statement *statement : body)
+        {
+            Statement *newStatement = updateStatement(statement, iteratorVar, i);
+            unrolledStatements.push_back(newStatement);
+        }
+    }
+    return unrolledStatements;
+}

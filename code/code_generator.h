@@ -6,6 +6,6 @@
 class CodeGen
 {
 public:
-	void compile(AST *Tree);
+	void compile(AST *Tree, bool optimize);
 };
 #endif

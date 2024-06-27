@@ -66,6 +66,7 @@ int main(int argc, const char **argv)
 	}
 
 	CodeGen CodeGenerator;
-	CodeGenerator.compile(Tree);
+	bool optimize = true;
+	CodeGenerator.compile(Tree, optimize);
 	return 0;
 }

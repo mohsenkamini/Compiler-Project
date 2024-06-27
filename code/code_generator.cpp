@@ -31,11 +31,12 @@ namespace
         FunctionType *CalcWriteFnTyBool;
         Function *CalcWriteFn;
         Function *CalcWriteFnBool;
+        bool optimize;
         
 
     public:
         // Constructor for the visitor class
-        ToIRVisitor(Module *M) : M(M), Builder(M->getContext())
+        ToIRVisitor(Module *M, bool optimize_enable) : M(M), Builder(M->getContext())
         {
             // Initialize LLVM types and constants
             VoidTy = Type::getVoidTy(M->getContext());
@@ -48,6 +49,7 @@ namespace
             CalcWriteFnTyBool = FunctionType::get(VoidTy, {Int1Ty}, false);
             CalcWriteFn = Function::Create(CalcWriteFnTy, GlobalValue::ExternalLinkage, "print", M);
             CalcWriteFnBool = Function::Create(CalcWriteFnTyBool, GlobalValue::ExternalLinkage, "printBool", M);
+            optimize = optimize_enable;
         }
 
         // Entry point for generating LLVM IR from the AST
@@ -445,8 +447,7 @@ namespace
         }
         virtual void visit(ForStatement &Node) override
         {
-            // change this later...
-            if (1) {
+            if (optimize) {
                 llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node);
                 for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
                     {
@@ -516,14 +517,14 @@ namespace
     
 }; // namespace
 
-void CodeGen::compile(AST *Tree)
+void CodeGen::compile(AST *Tree, bool optimize)
 {
     // Create an LLVM context and a module
     LLVMContext Ctx;
     Module *M = new Module("mas.expr", Ctx);
 
     // Create an instance of the ToIRVisitor and run it on the AST to generate LLVM IR
-    ToIRVisitor ToIRn(M);
+    ToIRVisitor ToIRn(M, optimize);
 
     ToIRn.run(Tree);
 
