@@ -82,7 +82,7 @@ llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement)
     int updateValue = 0;
     // find initial value of iterator from the body
     for(Statement *statement : body){
-        AssignStatement assignStatement = (AssignStatement *)statement;
+        AssignStatement* assignStatement = (AssignStatement *)statement;
         if(assignStatement->getLValue()->getValue() == iteratorVar){
             initialIterator = assignStatement->getRValue()->getNumber();
             updateValue = ((BinaryOp *)assignStatement->getRValue())->getRight()->getNumber();
