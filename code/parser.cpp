@@ -117,12 +117,12 @@ Base *Parser::parse()
         case Token::KW_for:
         {
             ForStatement *statement = parseFor();
-            llvm::SmallVector <Statement *> unrolled = completeUnroll(statement);
+            /*llvm::SmallVector <Statement *> unrolled = completeUnroll(statement);
             for (Statement *s : unrolled)
             {
                 statements.push_back(s);
-            }
-            //statements.push_back(statement);
+            }*/
+            statements.push_back(statement);
             break;
         }
         }
