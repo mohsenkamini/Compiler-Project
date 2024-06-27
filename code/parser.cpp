@@ -2,6 +2,7 @@
 #define PARSER_H
 #include "error.h"
 #include "parser.h"
+#include "optimizer.h"
 #include <string>
 using namespace std;
 #endif
@@ -116,7 +117,11 @@ Base *Parser::parse()
         case Token::KW_for:
         {
             ForStatement *statement = parseFor();
-            statements.push_back(statement);
+            llvm::SmallVector <Statement *> unrolled = completeUnroll(statement);
+            for (Statement *s : unrolled)
+            {
+                statements.push_back(s);
+            }
             break;
         }
         }
