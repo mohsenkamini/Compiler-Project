@@ -85,6 +85,7 @@ llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement, in
 
     BooleanOp *condition_boolean_op = (BooleanOp *)whileStatement->getCondition();
     int conditionValue = condition_boolean_op->getRight()->getNumber();
+    int conditionValue_arash = conditionValue;
     if(condition_boolean_op->getOperator() == BooleanOp::LessEqual){
         conditionValue++;
     }
@@ -92,9 +93,11 @@ llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement, in
     int initialIterator = 0;
     int updateValue = 0;
     // find initial value of iterator from the body
+    AssignStatement* updateValueStatement;
     for(Statement *statement : body){
         AssignStatement* assignStatement = (AssignStatement *)statement;
         if(assignStatement->getLValue()->getValue() == iteratorVar){
+            updateValueStatement = assignStatement;
             updateValue = ((BinaryOp *)assignStatement->getRValue())->getRight()->getNumber();
             continue;
         }
@@ -102,7 +105,27 @@ llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement, in
     }
 
 
-    
+    if(k > 0){
+        llvm::SmallVector<Statement *> newForBody;
+        for(Statement *statement : newBody){
+            for(int i = 0; i < k; i++){
+                AssignStatement* assignStatement = (AssignStatement *)statement;
+                Statement *newStatement = updateStatement(statement, iteratorVar, i * updateValue);
+                newForBody.push_back(newStatement);
+            }
+        }
+        AssignStatement * newForUpdate = new AssignStatement(iteratorVar, new BinaryOp(BinaryOp::Plus, iteratorVar, new Expression(k * updateValue)));
+        Expression* newCondition = new BooleanOp(condition_boolean_op->getOperator(), iteratorVar, new Expression(conditionValue_arash - updateValue));
+        AssignStatement* newInitialAssign = new AssignStatement(condition_boolean_op->getLeft(), new Expression(0));
+        ForStatement* newForStatement = new ForStatement(newCondition, newForBody, newInitialAssign, newForUpdate, Statement::StatementType::For, true);
+        unrolledStatements.push_back(newForStatement);
+        if(conditionValue % (k * updateValue) != 0){
+             newBody.push_back(updateValueStatement);
+             WhileStatement* afterForStatement = new WhileStatement(whileStatement->getCondition(), newBody, Statement::StatementType::While, true);  
+             unrolledStatements.push_back(afterForStatement);
+         }
+        return unrolledStatements;
+    }
     for (int i = initialIterator; i < conditionValue; i += updateValue){
         for (Statement *statement : newBody)
         {
