@@ -32,7 +32,7 @@ Statement *updateStatement(Statement *statement, llvm::StringRef iterator, int i
 }
 
 llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
-    int k = 5;
+    int k = 2;
     llvm::SmallVector<Statement *> unrolledStatements;
     llvm::SmallVector<Statement *> body = forStatement->getStatements();
 
@@ -49,7 +49,7 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
         for(Statement *statement : body){
             for(int i = 0; i < k; i++){
                 AssignStatement* assignStatement = (AssignStatement *)statement;
-                Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
+                Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i * k);
                 newForBody.push_back(newStatement);
             }
         }
