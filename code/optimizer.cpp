@@ -58,8 +58,9 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
         unrolledStatements.push_back(newForStatement);
         body.push_back(forStatement->getUpdateAssign());
         if(conditionValue % k * updateValue != 0){
-            WhileStatement afterForStatement = new WhileStatement(forStatement->getCondition(), body, Statement::StatementType::While, false);  
+            WhileStatement* afterForStatement = new WhileStatement(forStatement->getCondition(), body, Statement::StatementType::While, false);  
         }
+        unrolledStatements.push_back(afterForStatement);
         return unrolledStatements;
     }
     for (int i = initialIterator; i < conditionValue; i += updateValue){
