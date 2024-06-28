@@ -473,8 +473,10 @@ private:
 	llvm::SmallVector<Statement*> statements;
 	AssignStatement *initial_assign;
 	AssignStatement *update_assign;
+	bool optimized;
 public:
 	ForStatement(Expression* condition,llvm::SmallVector<Statement*> statements,AssignStatement *initial_assign,AssignStatement *update_assign, Statement type ) : condition(condition), statements(statements),initial_assign(initial_assign),update_assign(update_assign) , Statement(type){}
+	ForStatement(Expression* condition,llvm::SmallVector<Statement*> statements,AssignStatement *initial_assign,AssignStatement *update_assign, Statement type, bool optimized) : condition(condition), statements(statements),initial_assign(initial_assign),update_assign(update_assign) , Statement(type), optimized(optimized){}
 	Expression* getCondition()
 	{
 		return condition;
@@ -484,7 +486,9 @@ public:
 	{
 		return statements;
 	}
-
+	bool isOptimized(){
+		return optimized;
+	}
 	AssignStatement* getInitialAssign(){
 		return initial_assign;
 	}
