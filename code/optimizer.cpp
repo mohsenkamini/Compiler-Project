@@ -47,20 +47,22 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
     if(k>0){
         llvm::SmallVector<Statement *> newForBody;
         for(Statement *statement : body){
+            
             for(int i = 0; i < k; i++){
                 AssignStatement* assignStatement = (AssignStatement *)statement;
-                Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i * k);
+                Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i * updateValue);
                 newForBody.push_back(newStatement);
             }
         }
         AssignStatement * newForUpdate = new AssignStatement(forStatement->getUpdateAssign()->getLValue(), new BinaryOp(BinaryOp::Plus, forStatement->getUpdateAssign()->getLValue(), new Expression(k * updateValue)));
+        // todo
         ForStatement* newForStatement = new ForStatement(forStatement->getCondition(), newForBody, forStatement->getInitialAssign(), newForUpdate, Statement::StatementType::For, true);
         unrolledStatements.push_back(newForStatement);
-        if(conditionValue % (k * updateValue) != 0){
-            body.push_back(forStatement->getUpdateAssign());
-            WhileStatement* afterForStatement = new WhileStatement(forStatement->getCondition(), body, Statement::StatementType::While, true);  
-            unrolledStatements.push_back(afterForStatement);
-        }
+        // if(conditionValue % (k * updateValue) != 0){
+        //      body.push_back(forStatement->getUpdateAssign());
+        //      WhileStatement* afterForStatement = new WhileStatement(forStatement->getCondition(), body, Statement::StatementType::While, true);  
+        //      unrolledStatements.push_back(afterForStatement);
+        //  }
         return unrolledStatements;
     }
     for (int i = initialIterator; i < conditionValue; i += updateValue){
