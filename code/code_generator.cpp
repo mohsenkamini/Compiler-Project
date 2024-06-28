@@ -417,7 +417,7 @@ namespace
         virtual void visit(WhileStatement &Node) override
         {
             if (optimize && !Node.isOptimized()) {
-                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node);
+                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node, k);
                 for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
                     {
                         (*I)->accept(*this);
@@ -458,7 +458,7 @@ namespace
         virtual void visit(ForStatement &Node) override
         {
             if (optimize && !Node.isOptimized()) {
-                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node);
+                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node, k);
                 for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
                     {
                         (*I)->accept(*this);
