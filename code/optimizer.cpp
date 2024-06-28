@@ -31,8 +31,7 @@ Statement *updateStatement(Statement *statement, llvm::StringRef iterator, int i
     return new AssignStatement(assignment->getLValue(), newRight);
 }
 
-llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
-    int k = 2;
+llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement, int k){
     llvm::SmallVector<Statement *> unrolledStatements;
     llvm::SmallVector<Statement *> body = forStatement->getStatements();
 
@@ -77,7 +76,7 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
 }
 
 
-llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement)
+llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement, int k)
 {
     llvm::SmallVector<Statement *> unrolledStatements;
     llvm::SmallVector<Statement *> body = whileStatement->getStatements();
@@ -99,7 +98,10 @@ llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement)
             continue;
         }
         newBody.push_back(statement);
-    }    
+    }
+
+
+    
     for (int i = initialIterator; i < conditionValue; i += updateValue){
         for (Statement *statement : newBody)
         {
