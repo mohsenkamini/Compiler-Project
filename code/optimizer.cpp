@@ -40,6 +40,7 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
     int initialIterator = forStatement->getInitialAssign()->getRValue()->getNumber();
     BooleanOp *condition_boolean_op = (BooleanOp *)forStatement->getCondition();
     int conditionValue = condition_boolean_op->getRight()->getNumber();
+    int conditionValue_arash = conditionValue;
     if(condition_boolean_op->getOperator() == BooleanOp::LessEqual){
         conditionValue++;
     }
@@ -55,14 +56,14 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
             }
         }
         AssignStatement * newForUpdate = new AssignStatement(forStatement->getUpdateAssign()->getLValue(), new BinaryOp(BinaryOp::Plus, forStatement->getUpdateAssign()->getLValue(), new Expression(k * updateValue)));
-        Expression* newCondition = new BooleanOp(condition_boolean_op->getOperator(), forStatement->getInitialAssign()->getLValue(), new Expression(conditionValue - (conditionValue % k)));
+        Expression* newCondition = new BooleanOp(condition_boolean_op->getOperator(), forStatement->getInitialAssign()->getLValue(), new Expression(conditionValue_arash - updateValue));
         ForStatement* newForStatement = new ForStatement(newCondition, newForBody, forStatement->getInitialAssign(), newForUpdate, Statement::StatementType::For, true);
         unrolledStatements.push_back(newForStatement);
-        // if(conditionValue % (k * updateValue) != 0){
-        //      body.push_back(forStatement->getUpdateAssign());
-        //      WhileStatement* afterForStatement = new WhileStatement(forStatement->getCondition(), body, Statement::StatementType::While, true);  
-        //      unrolledStatements.push_back(afterForStatement);
-        //  }
+        if(conditionValue % (k * updateValue) != 0){
+             body.push_back(forStatement->getUpdateAssign());
+             WhileStatement* afterForStatement = new WhileStatement(forStatement->getCondition(), body, Statement::StatementType::While, true);  
+             unrolledStatements.push_back(afterForStatement);
+         }
         return unrolledStatements;
     }
     for (int i = initialIterator; i < conditionValue; i += updateValue){
