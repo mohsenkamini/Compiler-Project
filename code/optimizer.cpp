@@ -114,8 +114,8 @@ llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement, in
                 newForBody.push_back(newStatement);
             }
         }
-        AssignStatement * newForUpdate = new AssignStatement(iteratorVar, new BinaryOp(BinaryOp::Plus, iteratorVar, new Expression(k * updateValue)));
-        Expression* newCondition = new BooleanOp(condition_boolean_op->getOperator(), iteratorVar, new Expression(conditionValue_arash - updateValue));
+        AssignStatement * newForUpdate = new AssignStatement(condition_boolean_op->getLeft(), new BinaryOp(BinaryOp::Plus, condition_boolean_op->getLeft(), new Expression(k * updateValue)));
+        Expression* newCondition = new BooleanOp(condition_boolean_op->getOperator(), condition_boolean_op->getLeft(), new Expression(conditionValue_arash - updateValue));
         AssignStatement* newInitialAssign = new AssignStatement(condition_boolean_op->getLeft(), new Expression(0));
         ForStatement* newForStatement = new ForStatement(newCondition, newForBody, newInitialAssign, newForUpdate, Statement::StatementType::For, true);
         unrolledStatements.push_back(newForStatement);
