@@ -446,10 +446,11 @@ class WhileStatement : public Statement {
 private:
 	Expression* condition;
 	llvm::SmallVector<Statement*> statements;
+	bool optimized;
 
 public:
-	WhileStatement(Expression* condition, llvm::SmallVector<Statement*> statements, StatementType type) : condition(condition), statements(statements), Statement(type) { }
-
+	WhileStatement(Expression* condition, llvm::SmallVector<Statement*> statements, StatementType type) : condition(condition), statements(statements), Statement(type) {}
+	WhileStatement(Expression* condition, llvm::SmallVector<Statement*> statements, StatementType type, bool optimized) : condition(condition), statements(statements), Statement(type), optimized(optimized) { }
 	Expression* getCondition()
 	{
 		return condition;
@@ -463,6 +464,10 @@ public:
 	virtual void accept(ASTVisitor& V) override
 	{
 		V.visit(*this);
+	}
+
+	bool isOptimized(){
+		return optimized;
 	}
 };
 
