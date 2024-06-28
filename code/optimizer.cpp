@@ -55,8 +55,8 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
             }
         }
         AssignStatement * newForUpdate = new AssignStatement(forStatement->getUpdateAssign()->getLValue(), new BinaryOp(BinaryOp::Plus, forStatement->getUpdateAssign()->getLValue(), new Expression(k * updateValue)));
-        // todo
-        ForStatement* newForStatement = new ForStatement(forStatement->getCondition(), newForBody, forStatement->getInitialAssign(), newForUpdate, Statement::StatementType::For, true);
+        Expression* newCondition = new BooleanOp(condition_boolean_op->getOperator(), forStatement->getInitialAssign()->getLValue(), new Expression(conditionValue - (conditionValue % k)));
+        ForStatement* newForStatement = new ForStatement(newCondition, newForBody, forStatement->getInitialAssign(), newForUpdate, Statement::StatementType::For, true);
         unrolledStatements.push_back(newForStatement);
         // if(conditionValue % (k * updateValue) != 0){
         //      body.push_back(forStatement->getUpdateAssign());
