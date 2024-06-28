@@ -49,41 +49,11 @@ llvm::SmallVector<Statement *> completeUnroll(ForStatement *forStatement){
         for(Statement *statement : body){
             for(int i = 0; i < k; i++){
                 AssignStatement* assignStatement = (AssignStatement *)statement;
-                Expression* rValue = assignStatement->getRValue();
-                if(rValue->isBinaryOp()){
-                    BinaryOp* binaryOp = (BinaryOp *)rValue;
-                    if(binaryOp->getLeft()->isVariable() && binaryOp->getLeft()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
-                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
-                        newForBody.push_back(newStatement);
-                    }else if(binaryOp->getRight()->isVariable() && binaryOp->getRight()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
-                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
-                        newForBody.push_back(newStatement);
-                    }else{
-                        newForBody.push_back(statement);
-                    
-                    }
-                }else if(rValue->isBooleanOp()){
-                    BooleanOp* booleanOp = (BooleanOp *)rValue;
-                    if(booleanOp->getLeft()->isVariable() && booleanOp->getLeft()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
-                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
-                        newForBody.push_back(newStatement);
-                    }else if(booleanOp->getRight()->isVariable() && booleanOp->getRight()->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
-                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
-                        newForBody.push_back(newStatement);
-                    }else{
-                        newForBody.push_back(statement);
-                    }
-                }else{
-                    if(rValue->isVariable() && rValue->getValue() == forStatement->getInitialAssign()->getLValue()->getValue()){
-                        Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
-                        newForBody.push_back(newStatement);
-                    }else{
-                        newForBody.push_back(statement);
-                    }
-                }
+                Statement *newStatement = updateStatement(statement, forStatement->getInitialAssign()->getLValue()->getValue(), i);
+                newForBody.push_back(newStatement);
             }
         }
-        AssignStatement * newForUpdate = new AssignStatement(forStatement->getUpdateAssign()->getLValue(), new BinaryOp(BinaryOp::Plus, forStatement->getUpdateAssign()->getLValue(), new Expression(k)));
+        AssignStatement * newForUpdate = new AssignStatement(forStatement->getUpdateAssign()->getLValue(), new BinaryOp(BinaryOp::Plus, forStatement->getUpdateAssign()->getLValue(), new Expression(k * updateValue)));
         ForStatement* newForStatement = new ForStatement(forStatement->getCondition(), newForBody, forStatement->getInitialAssign(), newForUpdate, Statement::StatementType::For);
         unrolledStatements.push_back(newForStatement);
         return unrolledStatements;
@@ -132,3 +102,8 @@ llvm::SmallVector<Statement *> completeUnroll(WhileStatement *whileStatement)
     }
     return unrolledStatements;
 }
+
+// for(i 0 ta 10){
+// x = x + 1;
+
+// }
