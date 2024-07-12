@@ -1,4 +1,5 @@
 #include "code_generator.h"
+#include "optimizer.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
@@ -30,11 +31,13 @@ namespace
         FunctionType *CalcWriteFnTyBool;
         Function *CalcWriteFn;
         Function *CalcWriteFnBool;
+        bool optimize;
+        int k;
         
 
     public:
         // Constructor for the visitor class
-        ToIRVisitor(Module *M) : M(M), Builder(M->getContext())
+        ToIRVisitor(Module *M, bool optimize_enable, int k_value) : M(M), Builder(M->getContext())
         {
             // Initialize LLVM types and constants
             VoidTy = Type::getVoidTy(M->getContext());
@@ -47,6 +50,8 @@ namespace
             CalcWriteFnTyBool = FunctionType::get(VoidTy, {Int1Ty}, false);
             CalcWriteFn = Function::Create(CalcWriteFnTy, GlobalValue::ExternalLinkage, "print", M);
             CalcWriteFnBool = Function::Create(CalcWriteFnTyBool, GlobalValue::ExternalLinkage, "printBool", M);
+            optimize = optimize_enable;
+            k = k_value;
         }
 
         // Entry point for generating LLVM IR from the AST
@@ -411,6 +416,14 @@ namespace
 
         virtual void visit(WhileStatement &Node) override
         {
+            if (optimize && !Node.isOptimized()) {
+                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node, k);
+                for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
+                    {
+                        (*I)->accept(*this);
+                    }
+                return;
+            }
             llvm::BasicBlock* WhileCondBB = llvm::BasicBlock::Create(M->getContext(), "while.cond", MainFn);
             // The basic block for the while body.
             llvm::BasicBlock* WhileBodyBB = llvm::BasicBlock::Create(M->getContext(), "while.body", MainFn);
@@ -444,6 +457,14 @@ namespace
         }
         virtual void visit(ForStatement &Node) override
         {
+            if (optimize && !Node.isOptimized()) {
+                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node, k);
+                for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
+                    {
+                        (*I)->accept(*this);
+                    }
+                return;
+            }
             llvm::BasicBlock* ForCondBB = llvm::BasicBlock::Create(M->getContext(), "for.cond", MainFn);
             // The basic block for the while body.
             llvm::BasicBlock* ForBodyBB = llvm::BasicBlock::Create(M->getContext(), "for.body", MainFn);
@@ -506,14 +527,14 @@ namespace
     
 }; // namespace
 
-void CodeGen::compile(AST *Tree)
+void CodeGen::compile(AST *Tree, bool optimize, int k)
 {
     // Create an LLVM context and a module
     LLVMContext Ctx;
     Module *M = new Module("mas.expr", Ctx);
 
     // Create an instance of the ToIRVisitor and run it on the AST to generate LLVM IR
-    ToIRVisitor ToIRn(M);
+    ToIRVisitor ToIRn(M, optimize, k);
 
     ToIRn.run(Tree);
 

@@ -97,6 +97,18 @@ public:
 		return false;
 	}
 
+	bool isBinaryOp() {
+		if (Type == ExpressionType::BinaryOpType)
+			return true;
+		return false;
+	}
+
+	bool isBooleanOp() {
+		if (Type == ExpressionType::BooleanOpType)
+			return true;
+		return false;
+	}
+
 	llvm::StringRef getValue() {
 		return Value;
 	}
@@ -434,10 +446,11 @@ class WhileStatement : public Statement {
 private:
 	Expression* condition;
 	llvm::SmallVector<Statement*> statements;
+	bool optimized;
 
 public:
-	WhileStatement(Expression* condition, llvm::SmallVector<Statement*> statements, StatementType type) : condition(condition), statements(statements), Statement(type) { }
-
+	WhileStatement(Expression* condition, llvm::SmallVector<Statement*> statements, StatementType type) : condition(condition), statements(statements), Statement(type) {}
+	WhileStatement(Expression* condition, llvm::SmallVector<Statement*> statements, StatementType type, bool optimized) : condition(condition), statements(statements), Statement(type), optimized(optimized) { }
 	Expression* getCondition()
 	{
 		return condition;
@@ -452,6 +465,10 @@ public:
 	{
 		V.visit(*this);
 	}
+
+	bool isOptimized(){
+		return optimized;
+	}
 };
 
 class ForStatement : public Statement {
@@ -461,8 +478,10 @@ private:
 	llvm::SmallVector<Statement*> statements;
 	AssignStatement *initial_assign;
 	AssignStatement *update_assign;
+	bool optimized;
 public:
 	ForStatement(Expression* condition,llvm::SmallVector<Statement*> statements,AssignStatement *initial_assign,AssignStatement *update_assign, Statement type ) : condition(condition), statements(statements),initial_assign(initial_assign),update_assign(update_assign) , Statement(type){}
+	ForStatement(Expression* condition,llvm::SmallVector<Statement*> statements,AssignStatement *initial_assign,AssignStatement *update_assign, Statement type, bool optimized) : condition(condition), statements(statements),initial_assign(initial_assign),update_assign(update_assign) , Statement(type), optimized(optimized){}
 	Expression* getCondition()
 	{
 		return condition;
@@ -472,7 +491,9 @@ public:
 	{
 		return statements;
 	}
-
+	bool isOptimized(){
+		return optimized;
+	}
 	AssignStatement* getInitialAssign(){
 		return initial_assign;
 	}
