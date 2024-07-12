@@ -33,7 +33,10 @@ In this project, we create a new programming language similar to C and design it
     ```bash
     ./makeRun.sh
     ```
-
+4. To enable optimizer you should set the variable ```optimize``` to true.
+   ```c++
+   bool optimize = true;
+   ```
 ## Contributors
 
 - [Mohammad Nakhjiri](https://github.com/mnakhjiri)
