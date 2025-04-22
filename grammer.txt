@@ -10,7 +10,11 @@ Block ->
 
 Define -> 
 	"int"  Variable ";" |
-	"bool" Variable ";"
+	"bool" Variable ";" |
+	"float" Variable ";" |
+	"char" Variable ";" |
+	"string" Variable ";" |
+	"array" Variable ";"
 
 
 Variable ->
