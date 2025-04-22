@@ -61,6 +61,9 @@ Token Lexer::nextToken() {
         else if (text == "length") kind = Token::KW_length;
         else if (text == "min") kind = Token::KW_min;
         else if (text == "max") kind = Token::KW_max;
+        else if (text == "and")   kind = Token::and_op;
+        else if (text == "or")    kind = Token::or_op;
+        else if (text == "not")   kind = Token::not_op;
         else if (text == "index") kind = Token::KW_index;
         
         return {kind, text, 0, 0};
