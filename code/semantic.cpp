@@ -5,7 +5,6 @@
 
 
 namespace {
-    // Helper: convert VarType to printable name
     static const char *varTypeName(VarType t) {
         switch (t) {
         case VarType::INT:    return "int";
@@ -34,7 +33,7 @@ namespace {
             HasError = true;
         }
 
-        // Determine the VarType of an expression node, or VarType::ERROR on failure
+
         VarType typeOf(ASTNode *node) {
             if (!node) return VarType::ERROR;
             // Literals
