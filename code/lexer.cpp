@@ -30,7 +30,7 @@ Token Lexer::nextToken() {
 
     const char *tokStart = bufferPtr;
     
-    // شناسه‌ها و کلمات کلیدی
+    // KWords & Identifiers
     if (isalpha(*bufferPtr)) {
         while (isalnum(*bufferPtr) || *bufferPtr == '_') bufferPtr++;
         llvm::StringRef text(tokStart, bufferPtr - tokStart);
@@ -66,7 +66,7 @@ Token Lexer::nextToken() {
         return {kind, text, 0, 0};
     }
     
-    // اعداد
+    // numbers
     if (isdigit(*bufferPtr) || *bufferPtr == '.') {
         bool hasDot = (*bufferPtr == '.');
         while (isdigit(*bufferPtr) || (!hasDot && *bufferPtr == '.')) {
@@ -77,7 +77,7 @@ Token Lexer::nextToken() {
                 llvm::StringRef(tokStart, bufferPtr - tokStart), 0, 0};
     }
     
-    // رشته‌ها
+    // strings
     if (*bufferPtr == '"') {
         bufferPtr++;
         const char *start = bufferPtr;
@@ -85,7 +85,7 @@ Token Lexer::nextToken() {
         return {Token::string_literal, llvm::StringRef(start, bufferPtr - start), 0, 0};
     }
     
-    // کاراکترها
+    // charachters
     if (*bufferPtr == '\'') {
         bufferPtr++;
         char c = *bufferPtr;
@@ -93,7 +93,7 @@ Token Lexer::nextToken() {
         return {Token::char_literal, llvm::StringRef(&c, 1), 0, 0};
     }
     
-    // عملگرها و سمبل‌ها
+    // operators & symbols
     switch (*bufferPtr) {
         case ';': bufferPtr++; return {Token::semi_colon, ";", 0, 0};
         case ',': bufferPtr++; return {Token::comma, ",", 0, 0};
