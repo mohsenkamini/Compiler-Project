@@ -42,6 +42,7 @@ public:
         greater_equal,
         and_op,
         or_op,
+        not_op
         plus_plus,
         minus_minus,
 
