@@ -71,15 +71,18 @@ Token Lexer::nextToken() {
     
     // numbers
     if (isdigit(*bufferPtr) || *bufferPtr == '.') {
-        bool hasDot = (*bufferPtr == '.');
-        while (isdigit(*bufferPtr) || (!hasDot && *bufferPtr == '.')) {
-            if (*bufferPtr == '.') hasDot = true;
-            bufferPtr++;
-        }
-        return {hasDot ? Token::float_literal : Token::number, 
-                llvm::StringRef(tokStart, bufferPtr - tokStart), 0, 0};
+        bool hasDot = false;
+    if (*bufferPtr == '.') {
+        hasDot = true;
+        bufferPtr++;
     }
-    
+    while (isdigit(*bufferPtr) || (!hasDot && *bufferPtr == '.')) {
+        if (*bufferPtr == '.') hasDot = true;
+        bufferPtr++;
+    }
+    return {hasDot ? Token::float_literal : Token::number, 
+            llvm::StringRef(tokStart, bufferPtr - tokStart), 0, 0};}
+
     // strings
     if (*bufferPtr == '"') {
         bufferPtr++;
@@ -164,8 +167,10 @@ Token Lexer::nextToken() {
             if (*(bufferPtr + 1) == '=') {
                 bufferPtr += 2;
                 return {Token::not_equal, "!=", 0, 0};
+            } else {
+                bufferPtr++;
+                return {Token::not_op, "!", 0, 0};
             }
-            break;
         case '<':
             if (*(bufferPtr + 1) == '=') {
                 bufferPtr += 2;
