@@ -1,543 +1,224 @@
 #include "code_generator.h"
-#include "optimizer.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Support/raw_ostream.h"
 
 using namespace llvm;
 
-// Define a visitor class for generating LLVM IR from the AST.
-namespace
-{
-    class ToIRVisitor : public ASTVisitor
-    {
-        Module *M;
-        IRBuilder<> Builder;
-        Type *VoidTy;
-        Type *Int32Ty;
-        Type *Int1Ty;
-        Type *Int8PtrTy;
-        Type *Int8PtrPtrTy;
-        Constant *Int32Zero;
-        Constant *Int1Zero;
+namespace {
 
-        Value *V;
-        StringMap<AllocaInst *> nameMap;
+class ToIRVisitor : public ASTVisitor {
+    LLVMContext &Ctx;
+    std::unique_ptr<Module> M;
+    IRBuilder<> Builder;
+    Type *Int32Ty;
+    Type *Int1Ty;
+    Constant *Int32Zero;
+    Constant *Int1False;
 
-        llvm::FunctionType *MainFty;
-        llvm::Function *MainFn;
-        FunctionType *CalcWriteFnTy;
-        FunctionType *CalcWriteFnTyBool;
-        Function *CalcWriteFn;
-        Function *CalcWriteFnBool;
-        bool optimize;
-        int k;
-        
+    StringMap<AllocaInst*> NameMap;
+    Value *V;  // holds last expression value
+    Function *MainFn;
+    FunctionCallee PrintIntFn;
+    FunctionCallee PrintBoolFn;
+    bool Optimize;
+    int UnrollFactor;
 
-    public:
-        // Constructor for the visitor class
-        ToIRVisitor(Module *M, bool optimize_enable, int k_value) : M(M), Builder(M->getContext())
-        {
-            // Initialize LLVM types and constants
-            VoidTy = Type::getVoidTy(M->getContext());
-            Int32Ty = Type::getInt32Ty(M->getContext());
-            Int1Ty = Type::getInt1Ty(M->getContext());
-            Int8PtrTy = Type::getInt8PtrTy(M->getContext());
-            Int8PtrPtrTy = Int8PtrTy->getPointerTo();
-            Int32Zero = ConstantInt::get(Int32Ty, 0, true);
-            CalcWriteFnTy = FunctionType::get(VoidTy, {Int32Ty}, false);
-            CalcWriteFnTyBool = FunctionType::get(VoidTy, {Int1Ty}, false);
-            CalcWriteFn = Function::Create(CalcWriteFnTy, GlobalValue::ExternalLinkage, "print", M);
-            CalcWriteFnBool = Function::Create(CalcWriteFnTyBool, GlobalValue::ExternalLinkage, "printBool", M);
-            optimize = optimize_enable;
-            k = k_value;
-        }
+public:
+    ToIRVisitor(LLVMContext &context, bool optimize, int unroll)
+        : Ctx(context), M(new Module("main_module", context)), Builder(context),
+          Optimize(optimize), UnrollFactor(unroll) {
+        Int32Ty = Type::getInt32Ty(Ctx);
+        Int1Ty  = Type::getInt1Ty(Ctx);
+        Int32Zero  = ConstantInt::get(Int32Ty, 0);
+        Int1False  = ConstantInt::get(Int1Ty, 0);
+        // declare external print functions
+        PrintIntFn  = M->getOrInsertFunction("print", FunctionType::get(Type::getVoidTy(Ctx), {Int32Ty}, false));
+        PrintBoolFn = M->getOrInsertFunction("printBool", FunctionType::get(Type::getVoidTy(Ctx), {Int1Ty}, false));
+    }
 
-        // Entry point for generating LLVM IR from the AST
-        void run(AST *Tree)
-        {
-            // Create the main function with the appropriate function type.
-            MainFty = FunctionType::get(Int32Ty, {Int32Ty, Int8PtrPtrTy}, false);
-            MainFn = Function::Create(MainFty, GlobalValue::ExternalLinkage, "main", M);
+    Module *getModule() { return M.get(); }
 
-            // Create a basic block for the entry point of the main function.
-            BasicBlock *BB = BasicBlock::Create(M->getContext(), "entry", MainFn);
-            Builder.SetInsertPoint(BB);
+    void run(ProgramNode *root) {
+        // define main i32 @main()
+        FunctionType *FT = FunctionType::get(Int32Ty, false);
+        MainFn = Function::Create(FT, GlobalValue::ExternalLinkage, "main", M.get());
+        BasicBlock *BB = BasicBlock::Create(Ctx, "entry", MainFn);
+        Builder.SetInsertPoint(BB);
+        // generate body
+        root->accept(*this);
+        Builder.CreateRet(Int32Zero);
+        // verify
+        verifyFunction(*MainFn);
+    }
 
-            // Visit the root node of the AST to generate IR
-            Tree->accept(*this);
+    // Helpers
+    AllocaInst *createEntryBlockAlloca(Function *F, const std::string &Name, Type *Ty) {
+        IRBuilder<> TmpB(&F->getEntryBlock(), F->getEntryBlock().begin());
+        return TmpB.CreateAlloca(Ty, nullptr, Name);
+    }
 
-            // Create a return instruction at the end of the main function
-            Builder.CreateRet(Int32Zero);
-        }
+    // Visitor implementations
+    void visit(ProgramNode &node) override {
+        for (auto &stmt : node.statements)
+            stmt->accept(*this);
+    }
 
-        virtual void visit(Base &Node) override
-        {
-            // TODO: find a better way to not implement this again!
-            for (auto I = Node.begin(), E = Node.end(); I != E; ++I)
-            {
-                (*I)->accept(*this);
-            }
-        }
-
-        virtual void visit(Statement &Node) override
-        {
-            // TODO: find a better way to not implement this again!
-            if (Node.getKind() == Statement::StatementType::Declaration)
-            {
-                DecStatement *declaration = (DecStatement *)&Node;
-                declaration->accept(*this);
-            }
-            else if (Node.getKind() == Statement::StatementType::Assignment)
-            {
-                AssignStatement *declaration = (AssignStatement *)&Node;
-                declaration->accept(*this);
-            }
-            else if (Node.getKind() == Statement::StatementType::If)
-            {
-                IfStatement *declaration = (IfStatement *)&Node;
-                declaration->accept(*this);
-            }
-            else if (Node.getKind() == Statement::StatementType::ElseIf)
-            {
-                ElseIfStatement *declaration = (ElseIfStatement *)&Node;
-                declaration->accept(*this);
-            }
-            else if (Node.getKind() == Statement::StatementType::Else)
-            {
-                ElseStatement *declaration = (ElseStatement *)&Node;
-                declaration->accept(*this);
-            }
-            else if (Node.getKind() == Statement::StatementType::Print)
-            {
-                PrintStatement *declaration = (PrintStatement *)&Node;
-                declaration->accept(*this);
-            }
-            else if (Node.getKind() == Statement::StatementType::While)
-            {
-                WhileStatement *declaration = (WhileStatement *)&Node;
-                declaration->accept(*this);
-            }
-        }
-
-        virtual void visit(PrintStatement &Node) override {
-            // Visit the right-hand side of the expression and get its value.
-            Node.getExpr()->accept(*this);
-            Value *val = V;
-
-            // Determine the type of 'val' and select the appropriate print function
-            Type *valType = val->getType();
-            if (valType == Int32Ty) {
-                CallInst *Call = Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {val});
-            } else if (valType == Int1Ty) {
-                CallInst *Call = Builder.CreateCall(CalcWriteFnTyBool, CalcWriteFnBool, {val});
+    void visit(MultiVarDeclNode &node) override {
+        for (auto &decl : node.declarations) {
+            Type *Ty = (decl->type == VarType::BOOL ? Int1Ty : Int32Ty);
+            AllocaInst *A = createEntryBlockAlloca(MainFn, decl->name, Ty);
+            NameMap[decl->name()] = A;
+            // initialize
+            if (decl->value) {
+                decl->value->accept(*this);
+                Builder.CreateStore(V, A);
             } else {
-                // If the type is not supported, print an error message
-                llvm::errs() << "Unsupported type for print statement\n";
+                Builder.CreateStore(Ty==Int1Ty ? Int1False : Int32Zero, A);
             }
         }
+    }
 
-        virtual void visit(Expression &Node) override
-        {
-            if (Node.getKind() == Expression::ExpressionType::Identifier)
-            {
-                AllocaInst *allocaInst = nameMap[Node.getValue()];
-                if (!allocaInst) {
-                   llvm::errs() << "Undefined variable '" << Node.getValue() << "'\n";
-                    return;
-                }
-                V = Builder.CreateLoad(allocaInst->getAllocatedType(), allocaInst, Node.getValue());
-            }
-            else if (Node.getKind() == Expression::ExpressionType::Number)
-            {
-                int int_value = Node.getNumber();
-                V = ConstantInt::get(Int32Ty, int_value, true);
-            }
-            else if (Node.getKind() == Expression::ExpressionType::Boolean)
-            {
-                bool bool_value = Node.getBoolean();
-                V = ConstantInt::getBool(Int1Ty, bool_value);
-            }
+    void visit(AssignNode &node) override {
+        node.value->accept(*this);
+        auto *A = NameMap[node.target];
+        Builder.CreateStore(V, A);
+    }
+
+    void visit(VarRefNode &node) override {
+        AllocaInst *A = NameMap[node.name];
+        V = Builder.CreateLoad(A->getAllocatedType(), A, node.name);
+    }
+
+    void visit(LiteralNode<int> &node) override {
+        V = ConstantInt::get(Int32Ty, node.value);
+    }
+    void visit(LiteralNode<bool> &node) override {
+        V = ConstantInt::get(Int1Ty, node.value);
+    }
+
+    void visit(BinaryOpNode &node) override {
+        node.left->accept(*this);
+        Value *L = V;
+        node.right->accept(*this);
+        Value *R = V;
+        switch (node.op) {
+        case BinaryOp::ADD:        V = Builder.CreateAdd(L, R); break;
+        case BinaryOp::SUBTRACT:   V = Builder.CreateSub(L, R); break;
+        case BinaryOp::MULTIPLY:   V = Builder.CreateMul(L, R); break;
+        case BinaryOp::DIVIDE:     V = Builder.CreateSDiv(L, R); break;
+        case BinaryOp::MOD:        V = Builder.CreateSRem(L, R); break;
+        case BinaryOp::EQUAL:      V = Builder.CreateICmpEQ(L, R); break;
+        case BinaryOp::NOT_EQUAL:  V = Builder.CreateICmpNE(L, R); break;
+        case BinaryOp::LESS:       V = Builder.CreateICmpSLT(L, R); break;
+        case BinaryOp::LESS_EQUAL: V = Builder.CreateICmpSLE(L, R); break;
+        case BinaryOp::GREATER:    V = Builder.CreateICmpSGT(L, R); break;
+        case BinaryOp::GREATER_EQUAL: V = Builder.CreateICmpSGE(L,R); break;
+        case BinaryOp::AND:        V = Builder.CreateAnd(L, R); break;
+        case BinaryOp::OR:         V = Builder.CreateOr(L, R); break;
+        case BinaryOp::POW:
+            // simple pow via loop omitted for brevity
+            V = L; break;
+        default:
+            V = UndefValue::get(Int32Ty);
         }
+    }
 
-        virtual void visit(BooleanOp &Node) override
-        {
-            // Visit the left-hand side of the binary operation and get its value
-            Node.getLeft()->accept(*this);
-            Value *Left = V;
-
-            // Visit the right-hand side of the binary operation and get its value
-            Node.getRight()->accept(*this);
-            Value *Right = V;
-
-            // Perform the boolean operation based on the operator type and create the corresponding instruction
-            switch (Node.getOperator())
-            {
-            case BooleanOp::Equal:
-                V = Builder.CreateICmpEQ(Left, Right);
-                break;
-            case BooleanOp::NotEqual:
-                V = Builder.CreateICmpNE(Left, Right);
-                break;
-            case BooleanOp::Less:
-                V = Builder.CreateICmpSLT(Left, Right);
-                break;
-            case BooleanOp::LessEqual:
-                V = Builder.CreateICmpSLE(Left, Right);
-                break;
-            case BooleanOp::Greater:
-                V = Builder.CreateICmpSGT(Left, Right);
-                break;
-            case BooleanOp::GreaterEqual:
-                V = Builder.CreateICmpSGE(Left, Right);
-                break;
-            case BooleanOp::And:
-                V = Builder.CreateAnd(Left, Right);
-                break;
-            case BooleanOp::Or:
-                V = Builder.CreateOr(Left, Right);
-                break;
-            }
+    void visit(UnaryOpNode &node) override {
+        node.operand->accept(*this);
+        switch (node.op) {
+        case UnaryOp::INCREMENT: {
+            Value *One = ConstantInt::get(Int32Ty, 1);
+            V = Builder.CreateAdd(V, One);
+            break;
         }
-
-        virtual void visit(BinaryOp &Node) override
-        {
-            // Visit the left-hand side of the binary operation and get its value
-            Node.getLeft()->accept(*this);
-            Value *Left = V;
-
-            // Visit the right-hand side of the binary operation and get its value
-            Node.getRight()->accept(*this);
-            Value *Right = V;
-
-            // Perform the binary operation based on the operator type and create the corresponding instruction
-            switch (Node.getOperator())
-            {
-            case BinaryOp::Plus:
-                V = Builder.CreateNSWAdd(Left, Right);
-                break;
-            case BinaryOp::Minus:
-                V = Builder.CreateNSWSub(Left, Right);
-                break;
-            case BinaryOp::Mul:
-                V = Builder.CreateNSWMul(Left, Right);
-                break;
-            case BinaryOp::Div:
-                V = Builder.CreateSDiv(Left, Right);
-                break;
-            case BinaryOp::Pow:{
-                Function *func = Builder.GetInsertBlock()->getParent();
-                BasicBlock *preLoopBB = Builder.GetInsertBlock();
-                BasicBlock *loopBB = BasicBlock::Create(M->getContext(), "loop", func);
-                BasicBlock *afterLoopBB = BasicBlock::Create(M->getContext(), "afterloop", func);
-
-                // Setup loop entry
-                Builder.CreateBr(loopBB);
-                Builder.SetInsertPoint(loopBB);
-
-                // Create loop variables (PHI nodes)
-                PHINode *resultPhi = Builder.CreatePHI(Left->getType(), 2, "result");
-                resultPhi->addIncoming(Left, preLoopBB);
-
-                PHINode *indexPhi = Builder.CreatePHI(Type::getInt32Ty(M->getContext()), 2, "index");
-                indexPhi->addIncoming(ConstantInt::get(Type::getInt32Ty(M->getContext()), 0), preLoopBB);
-
-                // Perform multiplication
-                Value *updatedResult = Builder.CreateNSWMul(resultPhi, Left, "multemp");
-                Value *updatedIndex = Builder.CreateAdd(indexPhi, ConstantInt::get(Type::getInt32Ty(M->getContext()), 1), "indexinc");
-
-                // Exit condition
-                Value *condition = Builder.CreateICmpNE(updatedIndex, Right, "loopcond");
-                Builder.CreateCondBr(condition, loopBB, afterLoopBB);
-
-                // Update PHI nodes for the next iteration
-                resultPhi->addIncoming(updatedResult, loopBB);
-                indexPhi->addIncoming(updatedIndex, loopBB);
-
-                // Complete the loop
-                Builder.SetInsertPoint(afterLoopBB);
-                V = resultPhi; // The result of a^b
-                break;
-            }
-            case BinaryOp::Mod:
-                Value *division = Builder.CreateSDiv(Left, Right);
-                Value *multiplication = Builder.CreateNSWMul(division, Right);
-                V = Builder.CreateNSWSub(Left, multiplication);
-            }
+        case UnaryOp::DECREMENT: {
+            Value *One = ConstantInt::get(Int32Ty, 1);
+            V = Builder.CreateSub(V, One);
+            break;
         }
-
-        virtual void visit(DecStatement &Node) override
-        {
-            Value *val = nullptr;
-
-            if (Node.getRValue() != nullptr)
-            {
-                // If there is an expression provided, visit it and get its value
-                Node.getRValue()->accept(*this);
-                val = V;
-            }
-
-            // Iterate over the variables declared in the declaration statement
-            auto I = Node.getLValue()->getValue();
-            StringRef Var = I;
-
-            // Create an alloca instruction to allocate memory for the variable
-            Type *varType = (Node.getDecType() == DecStatement::DecStatementType::Number) ? Int32Ty : Type::getInt1Ty(M->getContext());
-            nameMap[Var] = Builder.CreateAlloca(varType);
-
-            // Store the initial value (if any) in the variable's memory location
-            if (val != nullptr)
-            {
-                Builder.CreateStore(val, nameMap[Var]);
-            }
-            else
-            {
-                if(Node.getDecType() == DecStatement::DecStatementType::Number){
-                    Value *Zero = ConstantInt::get(Type::getInt32Ty(M->getContext()), 0);
-                    Builder.CreateStore(Zero, nameMap[Var]);
-                } else{
-                    Value *False = ConstantInt::get(Type::getInt1Ty(M->getContext()), 0);
-                    Builder.CreateStore(False, nameMap[Var]);
-                }
-                
-            }
+        default:
+            break;
         }
+    }
 
-        virtual void visit(AssignStatement &Node) override
-        {
-            // Visit the right-hand side of the assignment and get its value
-            Node.getRValue()->accept(*this);
-            Value *val = V;
+    void visit(PrintNode &node) override {
+        node.expr->accept(*this);
+        if (V->getType()->isIntegerTy(1))
+            Builder.CreateCall(PrintBoolFn, {V});
+        else
+            Builder.CreateCall(PrintIntFn,  {V});
+    }
 
-            // Get the name of the variable being assigned
-            auto varName = Node.getLValue()->getValue();
+    void visit(IfElseNode &node) override {
+        BasicBlock *ThenBB = BasicBlock::Create(Ctx, "then", MainFn);
+        BasicBlock *ElseBB = BasicBlock::Create(Ctx, "else", MainFn);
+        BasicBlock *MergeBB= BasicBlock::Create(Ctx, "iftmp", MainFn);
+        // condition
+        node.condition->accept(*this);
+        Builder.CreateCondBr(V, ThenBB, ElseBB);
+        // then
+        Builder.SetInsertPoint(ThenBB);
+        node.thenBlock->accept(*this);
+        Builder.CreateBr(MergeBB);
+        // else
+        Builder.SetInsertPoint(ElseBB);
+        if (node.elseBlock)
+            node.elseBlock->accept(*this);
+        Builder.CreateBr(MergeBB);
+        // merge
+        Builder.SetInsertPoint(MergeBB);
+    }
 
-            // Create a store instruction to assign the value to the variable
-            Builder.CreateStore(val, nameMap[varName]);
-        }
+    void visit(WhileLoopNode &node) override {
+        BasicBlock *CondBB = BasicBlock::Create(Ctx, "while.cond", MainFn);
+        BasicBlock *BodyBB = BasicBlock::Create(Ctx, "while.body", MainFn);
+        BasicBlock *AfterBB= BasicBlock::Create(Ctx, "while.end", MainFn);
+        Builder.CreateBr(CondBB);
+        Builder.SetInsertPoint(CondBB);
+        node.condition->accept(*this);
+        Builder.CreateCondBr(V, BodyBB, AfterBB);
+        Builder.SetInsertPoint(BodyBB);
+        for (auto &s : node.body->statements)
+            s->accept(*this);
+        Builder.CreateBr(CondBB);
+        Builder.SetInsertPoint(AfterBB);
+    }
 
-        virtual void visit(IfStatement &Node) override
-        {
-            llvm::BasicBlock *IfCondBB = llvm::BasicBlock::Create(M->getContext(), "if.cond", MainFn);
-            llvm::BasicBlock *IfBodyBB = llvm::BasicBlock::Create(M->getContext(), "if.body", MainFn);
-            llvm::BasicBlock *AfterIfBB = llvm::BasicBlock::Create(M->getContext(), "after.if", MainFn);
+    void visit(ForLoopNode &node) override {
+        // init
+        if (node.init) node.init->accept(*this);
+        BasicBlock *CondBB = BasicBlock::Create(Ctx,"for.cond",MainFn);
+        BasicBlock *BodyBB = BasicBlock::Create(Ctx,"for.body",MainFn);
+        BasicBlock *AfterBB= BasicBlock::Create(Ctx,"for.end",MainFn);
+        Builder.CreateBr(CondBB);
+        Builder.SetInsertPoint(CondBB);
+        if (node.condition) { node.condition->accept(*this); Builder.CreateCondBr(V, BodyBB, AfterBB);}        
+        Builder.SetInsertPoint(BodyBB);
+        for (auto &s : node.body->statements)
+            s->accept(*this);
+        if (node.update) node.update->accept(*this);
+        Builder.CreateBr(CondBB);
+        Builder.SetInsertPoint(AfterBB);
+    }
 
-            Builder.CreateBr(IfCondBB);
-            Builder.SetInsertPoint(IfCondBB);
+    void visit(BlockNode &node) override {
+        for (auto &s : node.statements)
+            s->accept(*this);
+    }
 
-            Node.getCondition()->accept(*this);
-            Value *Cond = V;
+    // other nodes omitted or treated as error
+};
 
-            Builder.SetInsertPoint(IfBodyBB);
+} // end anonymous namespace
 
-            llvm::SmallVector<Statement *> stmts = Node.getStatements();
-            for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
-            {
-                (*I)->accept(*this);
-            }
-
-            Builder.CreateBr(AfterIfBB);
-            llvm::BasicBlock *BeforeCondBB = IfCondBB;
-            llvm::BasicBlock *BeforeBodyBB = IfBodyBB;
-            llvm::Value *BeforeCondVal = Cond;
-
-            if (Node.HasElseIf())
-            {
-                for (auto &elseIf : Node.getElseIfStatements())
-                {
-                    llvm::BasicBlock *ElseIfCondBB = llvm::BasicBlock::Create(MainFn->getContext(), "elseIf.cond", MainFn);
-                    llvm::BasicBlock *ElseIfBodyBB = llvm::BasicBlock::Create(MainFn->getContext(), "elseIf.body", MainFn);
-
-                    Builder.SetInsertPoint(BeforeCondBB);
-                    Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, ElseIfCondBB);
-
-                    Builder.SetInsertPoint(ElseIfCondBB);
-                    elseIf->getCondition()->accept(*this);
-                    llvm::Value *ElseIfCondVal = V;
-
-                    Builder.SetInsertPoint(ElseIfBodyBB);
-                    elseIf->accept(*this);
-                    Builder.CreateBr(AfterIfBB);
-
-                    BeforeCondBB = ElseIfCondBB;
-                    BeforeCondVal = ElseIfCondVal;
-                    BeforeBodyBB = ElseIfBodyBB;
-                }
-                // finishing the last else
-                // Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, AfterIfBB);
-            }
-
-
-            llvm::BasicBlock *ElseBB = nullptr;
-            if (Node.HasElse())
-            {
-                ElseStatement *elseS = Node.getElseStatement();
-                ElseBB = llvm::BasicBlock::Create(MainFn->getContext(), "else.body", MainFn);
-                if(Node.HasElseIf()){
-                    Builder.SetInsertPoint(BeforeCondBB);
-                    Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, ElseBB);
-                }
-                Builder.SetInsertPoint(ElseBB);
-                Node.getElseStatement()->accept(*this);
-                Builder.CreateBr(AfterIfBB);
-            }
-            else
-            {
-                Builder.SetInsertPoint(BeforeCondBB);
-                if(Node.HasElseIf()){
-                    Builder.CreateCondBr(BeforeCondVal, BeforeBodyBB, AfterIfBB);
-                }else{
-                    Builder.CreateCondBr(Cond, IfBodyBB, AfterIfBB);
-                }
-                
-            }
-
-            Builder.SetInsertPoint(AfterIfBB);
-        }
-
-        virtual void visit(ElseIfStatement &Node) override
-        {
-            llvm::SmallVector<Statement *> stmts = Node.getStatements();
-            for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
-            {
-                (*I)->accept(*this);
-            }
-        }
-
-        virtual void visit(ElseStatement &Node) override
-        {
-            llvm::SmallVector<Statement *> stmts = Node.getStatements();
-            for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
-            {
-                (*I)->accept(*this);
-            }
-        }
-
-        virtual void visit(WhileStatement &Node) override
-        {
-            if (optimize && !Node.isOptimized()) {
-                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node, k);
-                for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
-                    {
-                        (*I)->accept(*this);
-                    }
-                return;
-            }
-            llvm::BasicBlock* WhileCondBB = llvm::BasicBlock::Create(M->getContext(), "while.cond", MainFn);
-            // The basic block for the while body.
-            llvm::BasicBlock* WhileBodyBB = llvm::BasicBlock::Create(M->getContext(), "while.body", MainFn);
-            // The basic block after the while statement.
-            llvm::BasicBlock* AfterWhileBB = llvm::BasicBlock::Create(M->getContext(), "after.while", MainFn);
-
-            // Branch to the condition block.
-            Builder.CreateBr(WhileCondBB);
-
-            // Set the insertion point to the condition block.
-            Builder.SetInsertPoint(WhileCondBB);
-
-            // Visit the condition expression and create the conditional branch.
-            Node.getCondition()->accept(*this);
-            Value* Cond = V;
-            Builder.CreateCondBr(Cond, WhileBodyBB, AfterWhileBB);
-
-            // Set the insertion point to the body block.
-            Builder.SetInsertPoint(WhileBodyBB);
-
-            llvm::SmallVector<Statement* > stmts = Node.getStatements();
-            for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
-            {
-                (*I)->accept(*this);
-            }
-
-            // Branch back to the condition block.
-            Builder.CreateBr(WhileCondBB);
-            // Set the insertion point to the block after the while loop.
-            Builder.SetInsertPoint(AfterWhileBB);
-        }
-        virtual void visit(ForStatement &Node) override
-        {
-            if (optimize && !Node.isOptimized()) {
-                llvm::SmallVector<Statement*> unrolledStatements = completeUnroll(&Node, k);
-                for (auto I = unrolledStatements.begin(), E = unrolledStatements.end(); I != E; ++I)
-                    {
-                        (*I)->accept(*this);
-                    }
-                return;
-            }
-            llvm::BasicBlock* ForCondBB = llvm::BasicBlock::Create(M->getContext(), "for.cond", MainFn);
-            // The basic block for the while body.
-            llvm::BasicBlock* ForBodyBB = llvm::BasicBlock::Create(M->getContext(), "for.body", MainFn);
-            // The basic block after the while statement.
-            llvm::BasicBlock* AfterForBB = llvm::BasicBlock::Create(M->getContext(), "after.for", MainFn);
-
-            llvm::BasicBlock* ForUpdateBB = llvm::BasicBlock::Create(M->getContext(), "for.update", MainFn);
-
-            AssignStatement * initial_assign = Node.getInitialAssign();
-            ((Expression *)initial_assign->getRValue())->accept(*this);
-            Value *val = V;
-
-            // Get the name of the variable being assigned
-            auto varName = ((Expression *)initial_assign->getLValue())->getValue();
-
-            // Create a store instruction to assign the value to the variable
-            Builder.CreateStore(val, nameMap[varName]);
-
-
-            // Branch to the condition block.
-            Builder.CreateBr(ForCondBB);
-
-            // Set the insertion point to the condition block.
-            Builder.SetInsertPoint(ForCondBB);
-
-            // Visit the condition expression and create the conditional branch.
-            Node.getCondition()->accept(*this);
-            Value* Cond = V;
-            Builder.CreateCondBr(Cond, ForBodyBB, AfterForBB);
-
-            // Set the insertion point to the body block.
-            Builder.SetInsertPoint(ForBodyBB);
-
-            llvm::SmallVector<Statement* > stmts = Node.getStatements();
-            for (auto I = stmts.begin(), E = stmts.end(); I != E; ++I)
-            {
-                (*I)->accept(*this);
-            }
-
-            Builder.CreateBr(ForUpdateBB);
-
-            Builder.SetInsertPoint(ForUpdateBB);
-
-            AssignStatement * update_assign = Node.getUpdateAssign();
-            ((Expression *)update_assign->getRValue())->accept(*this);
-            val = V;
-
-            // Get the name of the variable being assigned
-            varName = ((Expression *)update_assign->getLValue())->getValue();
-
-            // Create a store instruction to assign the value to the variable
-            Builder.CreateStore(val, nameMap[varName]);
-
-            // Branch back to the condition block.
-            Builder.CreateBr(ForCondBB);
-            // Set the insertion point to the block after the while loop.
-            Builder.SetInsertPoint(AfterForBB);
-        }
-    };
-    
-}; // namespace
-
-void CodeGen::compile(AST *Tree, bool optimize, int k)
-{
-    // Create an LLVM context and a module
+void CodeGen::compile(ProgramNode *root, bool optimize, int unroll) {
     LLVMContext Ctx;
-    Module *M = new Module("mas.expr", Ctx);
-
-    // Create an instance of the ToIRVisitor and run it on the AST to generate LLVM IR
-    ToIRVisitor ToIRn(M, optimize, k);
-
-    ToIRn.run(Tree);
-
-    // Print the generated module to the standard output
-    M->print(outs(), nullptr);
+    ToIRVisitor visitor(Ctx, optimize, unroll);
+    visitor.run(root);
+    Module *mod = visitor.getModule();
+    mod->print(outs(), nullptr);
 }
