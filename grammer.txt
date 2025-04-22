@@ -29,10 +29,12 @@ Digit ->
 
 
 Number_A ->
-	Number_B |
-	"-" Number_B |
-    "+" Number_B
-
+    Number_B |
+    Float |
+    "-" Number_B |
+    "-" Float |
+    "+" Number_B |
+    "+" Float
 
 Number_B ->
 	Digit |
@@ -153,4 +155,12 @@ ForCondition ->
 ForUpdate ->
 	Unary |
 	Identifier_A AssignOperation Value
-    
+   
+
+
+
+Float ->
+    Number_B "." Number_B |
+    "." Number_B |
+    Number_B "."
+ 

@@ -20,3 +20,6 @@ if (flag == false) {
 } else { 
 	print(x);
 }
+
+float ff;
+float t=3;
