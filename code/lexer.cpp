@@ -1,46 +1,41 @@
 #include "lexer.h"
 #include <cctype>
 
-namespace charinfo {
-    LLVM_READNONE inline bool isWhitespace(char c) {
-        return c == ' ' || c == '\t' || c == '\f' || 
-               c == '\v' || c == '\r' || c == '\n';
-    }
+Lexer::Lexer(llvm::StringRef buffer) {
+    bufferStart = buffer.begin();
+    bufferPtr = bufferStart;
+}
 
-    LLVM_READNONE inline bool isDigit(char c) {
-        return std::isdigit(c);
-    }
-
-    LLVM_READNONE inline bool isAlpha(char c) {
-        return std::isalpha(c) || c == '_';
-    }
-
-    LLVM_READNONE inline bool isAlnum(char c) {
-        return isAlpha(c) || isDigit(c);
+void Lexer::skipWhitespace() {
+    while (isspace(*bufferPtr)) {
+        if (*bufferPtr == '\n') bufferPtr++;
+        else bufferPtr++;
     }
 }
 
-void Lexer::next(Token &token) {
-    while (*BufferPtr && charinfo::isWhitespace(*BufferPtr)) ++BufferPtr;
-
-    if (!*BufferPtr) {
-        token.Kind = Token::eof;
-        return;
+void Lexer::skipComment() {
+    if (*bufferPtr == '/' && *(bufferPtr + 1) == '*') {
+        bufferPtr += 2;
+        while (!(*bufferPtr == '*' && *(bufferPtr + 1) == '/')) bufferPtr++;
+        bufferPtr += 2;
     }
+}
 
-    if (*BufferPtr == '/' && *(BufferPtr + 1) == '*') {
-        skipMultiLineComment();
-        return next(token);
-    }
+Token Lexer::nextToken() {
+    skipWhitespace();
+    skipComment();
 
-    // identifiers
-    if (charinfo::isAlpha(*BufferPtr)) {
-        const char *end = BufferPtr + 1;
-        while (charinfo::isAlnum(*end)) ++end;
+    if (bufferPtr >= bufferStart + buffer.size()) 
+        return {Token::eof, llvm::StringRef(), 0, 0};
 
-        llvm::StringRef text(BufferPtr, end - BufferPtr);
+    const char *tokStart = bufferPtr;
+    
+    // شناسه‌ها و کلمات کلیدی
+    if (isalpha(*bufferPtr)) {
+        while (isalnum(*bufferPtr) || *bufferPtr == '_') bufferPtr++;
+        llvm::StringRef text(tokStart, bufferPtr - tokStart);
+        
         Token::TokenKind kind = Token::identifier;
-
         if (text == "int") kind = Token::KW_int;
         else if (text == "bool") kind = Token::KW_bool;
         else if (text == "float") kind = Token::KW_float;
@@ -51,100 +46,141 @@ void Lexer::next(Token &token) {
         else if (text == "else") kind = Token::KW_else;
         else if (text == "while") kind = Token::KW_while;
         else if (text == "for") kind = Token::KW_for;
-        else if (text == "and") kind = Token::KW_and;
-        else if (text == "or") kind = Token::KW_or;
+        else if (text == "foreach") kind = Token::KW_foreach;
+        else if (text == "in") kind = Token::KW_in;
+        else if (text == "print") kind = Token::KW_print;
         else if (text == "true") kind = Token::KW_true;
         else if (text == "false") kind = Token::KW_false;
-        else if (text == "print") kind = Token::KW_print;
-
-        formToken(token, end, kind);
-        return;
-    }
-
-    if (charinfo::isDigit(*BufferPtr) || (*BufferPtr == '.' && charinfo::isDigit(*(BufferPtr + 1))) {
-        const char *end = BufferPtr;
-        bool hasDot = false;
+        else if (text == "try") kind = Token::KW_try;
+        else if (text == "catch") kind = Token::KW_catch;
+        else if (text == "error") kind = Token::KW_error;
+        else if (text == "match") kind = Token::KW_match;
+        else if (text == "concat") kind = Token::KW_concat;
+        else if (text == "pow") kind = Token::KW_pow;
+        else if (text == "abs") kind = Token::KW_abs;
+        else if (text == "length") kind = Token::KW_length;
+        else if (text == "min") kind = Token::KW_min;
+        else if (text == "max") kind = Token::KW_max;
+        else if (text == "index") kind = Token::KW_index;
         
-        while (charinfo::isDigit(*end) || (*end == '.' && !hasDot)) {
-            if (*end == '.') hasDot = true;
-            ++end;
+        return {kind, text, 0, 0};
+    }
+    
+    // اعداد
+    if (isdigit(*bufferPtr) || *bufferPtr == '.') {
+        bool hasDot = (*bufferPtr == '.');
+        while (isdigit(*bufferPtr) || (!hasDot && *bufferPtr == '.')) {
+            if (*bufferPtr == '.') hasDot = true;
+            bufferPtr++;
         }
-
-        formToken(token, end, hasDot ? Token::number : Token::number);
-        return;
+        return {hasDot ? Token::float_literal : Token::number, 
+                llvm::StringRef(tokStart, bufferPtr - tokStart), 0, 0};
     }
-
-    switch (*BufferPtr) {
-        case ';': formToken(token, BufferPtr + 1, Token::semi_colon); break;
-        case ',': formToken(token, BufferPtr + 1, Token::comma); break;
-        case '(': formToken(token, BufferPtr + 1, Token::l_paren); break;
-        case ')': formToken(token, BufferPtr + 1, Token::r_paren); break;
-        case '{': formToken(token, BufferPtr + 1, Token::l_brace); break;
-        case '}': formToken(token, BufferPtr + 1, Token::r_brace); break;
-        
+    
+    // رشته‌ها
+    if (*bufferPtr == '"') {
+        bufferPtr++;
+        const char *start = bufferPtr;
+        while (*bufferPtr != '"' && *bufferPtr != '\0') bufferPtr++;
+        return {Token::string_literal, llvm::StringRef(start, bufferPtr - start), 0, 0};
+    }
+    
+    // کاراکترها
+    if (*bufferPtr == '\'') {
+        bufferPtr++;
+        char c = *bufferPtr;
+        bufferPtr += 2; // Skip closing '
+        return {Token::char_literal, llvm::StringRef(&c, 1), 0, 0};
+    }
+    
+    // عملگرها و سمبل‌ها
+    switch (*bufferPtr) {
+        case ';': bufferPtr++; return {Token::semi_colon, ";", 0, 0};
+        case ',': bufferPtr++; return {Token::comma, ",", 0, 0};
+        case '(': bufferPtr++; return {Token::l_paren, "(", 0, 0};
+        case ')': bufferPtr++; return {Token::r_paren, ")", 0, 0};
+        case '{': bufferPtr++; return {Token::l_brace, "{", 0, 0};
+        case '}': bufferPtr++; return {Token::r_brace, "}", 0, 0};
+        case '[': bufferPtr++; return {Token::l_bracket, "[", 0, 0};
+        case ']': bufferPtr++; return {Token::r_bracket, "]", 0, 0};
         case '+':
-            if (*(BufferPtr + 1) == '+') formToken(token, BufferPtr + 2, Token::increment);
-            else if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::plus_equal);
-            else formToken(token, BufferPtr + 1, Token::plus);
-            break;
-            
+            if (*(bufferPtr + 1) == '+') {
+                bufferPtr += 2;
+                return {Token::plus_plus, "++", 0, 0};
+            } else if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::plus_equal, "+=", 0, 0};
+            }
+            bufferPtr++;
+            return {Token::plus, "+", 0, 0};
         case '-':
-            if (*(BufferPtr + 1) == '-') formToken(token, BufferPtr + 2, Token::decrement);
-            else if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::minus_equal);
-            else formToken(token, BufferPtr + 1, Token::minus);
-            break;
-            
+            if (*(bufferPtr + 1) == '-') {
+                bufferPtr += 2;
+                return {Token::minus_minus, "--", 0, 0};
+            } else if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::minus_equal, "-=", 0, 0};
+            } else if (*(bufferPtr + 1) == '>') {
+                bufferPtr += 2;
+                return {Token::arrow, "->", 0, 0};
+            }
+            bufferPtr++;
+            return {Token::minus, "-", 0, 0};
         case '*':
-            if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::star_equal);
-            else formToken(token, BufferPtr + 1, Token::star);
-            break;
-            
+            if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::star_equal, "*=", 0, 0};
+            }
+            bufferPtr++;
+            return {Token::star, "*", 0, 0};
         case '/':
-            if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::slash_equal);
-            else formToken(token, BufferPtr + 1, Token::slash);
-            break;
-            
-        case '^': formToken(token, BufferPtr + 1, Token::power); break;
-        case '%': 
-            if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::mod_equal);
-            else formToken(token, BufferPtr + 1, Token::mod);
-            break;
-            
+            if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::slash_equal, "/=", 0, 0};
+            }
+            bufferPtr++;
+            return {Token::slash, "/", 0, 0};
+        case '%':
+            if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::mod_equal, "%=", 0, 0};
+            }
+            bufferPtr++;
+            return {Token::mod, "%", 0, 0};
+        case '^':
+            bufferPtr++;
+            return {Token::caret, "^", 0, 0};
         case '=':
-            if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::equal_equal);
-            else formToken(token, BufferPtr + 1, Token::equal);
-            break;
-            
+            if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::equal_equal, "==", 0, 0};
+            }
+            bufferPtr++;
+            return {Token::equal, "=", 0, 0};
         case '!':
-            if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::not_equal);
-            else formToken(token, BufferPtr + 1, Token::KW_not);
+            if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::not_equal, "!=", 0, 0};
+            }
             break;
-            
         case '<':
-            if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::less_equal);
-            else formToken(token, BufferPtr + 1, Token::less);
-            break;
-            
+            if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::less_equal, "<=", 0, 0};
+            }
+            bufferPtr++;
+            return {Token::less, "<", 0, 0};
         case '>':
-            if (*(BufferPtr + 1) == '=') formToken(token, BufferPtr + 2, Token::greater_equal);
-            else formToken(token, BufferPtr + 1, Token::greater);
-            break;
-            
-        default:
-            formToken(token, BufferPtr + 1, Token::unknown);
+            if (*(bufferPtr + 1) == '=') {
+                bufferPtr += 2;
+                return {Token::greater_equal, ">=", 0, 0};
+            }
+            bufferPtr++;
+            return {Token::greater, ">", 0, 0};
+        case '_':
+            bufferPtr++;
+            return {Token::underscore, "_", 0, 0};
     }
-}
-
-void Lexer::skipMultiLineComment() {
-    BufferPtr += 2;
-    while (*BufferPtr && !(*BufferPtr == '*' && *(BufferPtr + 1) == '/')) {
-        ++BufferPtr;
-    }
-    if (*BufferPtr) BufferPtr += 2;
-}
-
-void Lexer::formToken(Token &Tok, const char *TokEnd, Token::TokenKind Kind) {
-    Tok.Kind = Kind;
-    Tok.Text = llvm::StringRef(BufferPtr, TokEnd - BufferPtr);
-    BufferPtr = TokEnd;
+    
+    return {Token::eof, llvm::StringRef(), 0, 0};
 }
