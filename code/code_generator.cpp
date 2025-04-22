@@ -314,6 +314,249 @@ void CodeGen::generateMatch(MatchNode* node) {
 
 
 
+// ... ادامه از قسمت قبلی
+
+Value* CodeGen::generateArray(ArrayNode* node, Type* expectedType) {
+    ArrayType* arrType = ArrayType::get(Type::getInt32Ty(*context), node->elements.size());
+    Value* arrayPtr = builder->CreateAlloca(arrType);
+    
+    for (size_t i = 0; i < node->elements.size(); ++i) {
+        Value* idx[] = {
+            ConstantInt::get(Type::getInt32Ty(*context), 0),
+            ConstantInt::get(Type::getInt32Ty(*context), i)
+        };
+        Value* elemPtr = builder->CreateInBoundsGEP(arrType, arrayPtr, idx);
+        Value* val = generateValue(node->elements[i].get(), Type::getInt32Ty(*context));
+        builder->CreateStore(val, elemPtr);
+    }
+    
+    return builder->CreateBitCast(arrayPtr, expectedType);
+}
+
+Value* CodeGen::generateArrayAccess(ArrayAccessNode* node) {
+    Value* arrayPtr = symbols[node->arrayName];
+    Value* index = generateValue(node->index.get(), Type::getInt32Ty(*context));
+    
+    // Runtime bounds checking
+    if (arraySizes.count(node->arrayName)) {
+        Value* size = ConstantInt::get(Type::getInt32Ty(*context), arraySizes[node->arrayName]);
+        Value* cond = builder->CreateICmpSGE(index, size);
+        
+        BasicBlock* errorBB = BasicBlock::Create(*context, "bounds_error", builder->GetInsertBlock()->getParent());
+        BasicBlock* validBB = BasicBlock::Create(*context, "valid_index");
+        
+        builder->CreateCondBr(cond, errorBB, validBB);
+        
+        builder->SetInsertPoint(errorBB);
+        Function* throwFunc = Function::Create(
+            FunctionType::get(Type::getVoidTy(*context), {Type::getInt8PtrTy(*context)}, false),
+            Function::ExternalLinkage, "throw_exception", module.get()
+        );
+        Value* msg = builder->CreateGlobalStringPtr("Array index out of bounds!");
+        builder->CreateCall(throwFunc, {msg});
+        builder->CreateUnreachable();
+        
+        builder->GetInsertBlock()->getParent()->getBasicBlockList().push_back(validBB);
+        builder->SetInsertPoint(validBB);
+    }
+    
+    return generateArrayIndex(arrayPtr, index);
+}
+
+Value* CodeGen::generateUnaryOp(UnaryOpNode* node) {
+    Value* operand = generateValue(node->operand.get(), nullptr);
+    
+    switch(node->op) {
+        case UnaryOp::MINUS:
+            if (operand->getType()->isFloatTy()) {
+                return builder->CreateFNeg(operand);
+            } else {
+                return builder->CreateNeg(operand);
+            }
+        case UnaryOp::INCREMENT: {
+            Value* inc = ConstantInt::get(operand->getType(), 1);
+            Value* newVal = builder->CreateAdd(operand, inc);
+            if (auto varRef = dynamic_cast<VarRefNode*>(node->operand.get())) {
+                builder->CreateStore(newVal, symbols[varRef->name]);
+            }
+            return operand; // Post-increment returns original value
+        }
+        case UnaryOp::LENGTH: {
+            if (!arraySizes.count(node->operand->getName())) {
+                throw std::runtime_error("Length operator on non-array type");
+            }
+            return ConstantInt::get(Type::getInt32Ty(*context), arraySizes[node->operand->getName()]);
+        }
+        default:
+            throw std::runtime_error("Unsupported unary operator");
+    }
+}
+
+void CodeGen::generateCompoundAssign(CompoundAssignNode* node) {
+    Value* target = symbols[node->target];
+    Value* current = builder->CreateLoad(target->getType()->getPointerElementType(), target);
+    Value* rhs = generateValue(node->value.get(), current->getType());
+    
+    Value* result;
+    switch(node->op) {
+        case BinaryOp::ADD:
+            result = current->getType()->isFloatTy() ? 
+                builder->CreateFAdd(current, rhs) : 
+                builder->CreateAdd(current, rhs);
+            break;
+        case BinaryOp::SUBTRACT:
+            result = current->getType()->isFloatTy() ? 
+                builder->CreateFSub(current, rhs) : 
+                builder->CreateSub(current, rhs);
+            break;
+        default:
+            throw std::runtime_error("Unsupported compound assignment");
+    }
+    
+    builder->CreateStore(result, target);
+}
+
+void CodeGen::generateWhileLoop(WhileLoopNode* node) {
+    Function* func = builder->GetInsertBlock()->getParent();
+    BasicBlock* condBB = BasicBlock::Create(*context, "while.cond", func);
+    BasicBlock* bodyBB = BasicBlock::Create(*context, "while.body");
+    BasicBlock* endBB = BasicBlock::Create(*context, "while.end");
+    
+    builder->CreateBr(condBB);
+    
+    // Condition block
+    builder->SetInsertPoint(condBB);
+    Value* cond = generateValue(node->condition.get(), Type::getInt1Ty(*context));
+    builder->CreateCondBr(cond, bodyBB, endBB);
+    
+    // Body block
+    func->getBasicBlockList().push_back(bodyBB);
+    builder->SetInsertPoint(bodyBB);
+    generateStatement(node->body.get());
+    builder->CreateBr(condBB);  // Loop back
+    
+    // End block
+    func->getBasicBlockList().push_back(endBB);
+    builder->SetInsertPoint(endBB);
+}
+
+Value* CodeGen::generateTernaryExpr(TernaryExprNode* node) {
+    Value* cond = generateValue(node->condition.get(), Type::getInt1Ty(*context));
+    Function* func = builder->GetInsertBlock()->getParent();
+    
+    BasicBlock* trueBB = BasicBlock::Create(*context, "ternary.true", func);
+    BasicBlock* falseBB = BasicBlock::Create(*context, "ternary.false");
+    BasicBlock* mergeBB = BasicBlock::Create(*context, "ternary.merge");
+    
+    builder->CreateCondBr(cond, trueBB, falseBB);
+    
+    // True branch
+    builder->SetInsertPoint(trueBB);
+    Value* trueVal = generateValue(node->trueExpr.get(), nullptr);
+    builder->CreateBr(mergeBB);
+    
+    // False branch
+    func->getBasicBlockList().push_back(falseBB);
+    builder->SetInsertPoint(falseBB);
+    Value* falseVal = generateValue(node->falseExpr.get(), nullptr);
+    builder->CreateBr(mergeBB);
+    
+    // Merge
+    func->getBasicBlockList().push_back(mergeBB);
+    builder->SetInsertPoint(mergeBB);
+    PHINode* phi = builder->CreatePHI(trueVal->getType(), 2);
+    phi->addIncoming(trueVal, trueBB);
+    phi->addIncoming(falseVal, falseBB);
+    
+    return phi;
+}
+
+void CodeGen::generateTypeConversion(TypeConversionNode* node) {
+    Value* val = generateValue(node->expr.get(), nullptr);
+    Type* targetType = getLLVMType(node->targetType);
+    
+    if (val->getType() == targetType) return val;
+    
+    if (targetType->isFloatTy() && val->getType()->isIntegerTy()) {
+        return builder->CreateSIToFP(val, targetType);
+    }
+    if (targetType->isIntegerTy() && val->getType()->isFloatTy()) {
+        return builder->CreateFPToSI(val, targetType);
+    }
+    if (targetType->isPointerTy() && val->getType()->isIntegerTy()) {
+        return builder->CreateIntToPtr(val, targetType);
+    }
+    
+    throw std::runtime_error("Invalid type conversion");
+}
+
+Value* CodeGen::generateBuiltInCall(BuiltInCallNode* node) {
+    if (node->funcName == "pow") {
+        Value* base = generateValue(node->args[0].get(), Type::getDoubleTy(*context));
+        Value* exp = generateValue(node->args[1].get(), Type::getDoubleTy(*context));
+        return builder->CreateCall(
+            Intrinsic::getDeclaration(module.get(), Intrinsic::pow, {Type::getDoubleTy(*context)}),
+            {base, exp}
+        );
+    }
+    if (node->funcName == "abs") {
+        Value* val = generateValue(node->args[0].get(), nullptr);
+        if (val->getType()->isFloatTy()) {
+            return builder->CreateCall(
+                Intrinsic::getDeclaration(module.get(), Intrinsic::fabs, {val->getType()}),
+                {val}
+            );
+        } else {
+            Value* zero = ConstantInt::get(val->getType(), 0);
+            Value* neg = builder->CreateNeg(val);
+            return builder->CreateSelect(
+                builder->CreateICmpSGT(val, zero),
+                val,
+                neg
+            );
+        }
+    }
+    throw std::runtime_error("Unknown built-in function");
+}
+
+void CodeGen::generateMemoryManagement() {
+    // Register destructors for stack-allocated arrays
+    for (auto& [name, alloca] : symbols) {
+        if (alloca->getAllocatedType()->isPointerTy()) {
+            Function* freeFunc = Function::Create(
+                FunctionType::get(Type::getVoidTy(*context), {Type::getInt8PtrTy(*context)}, false),
+                Function::ExternalLinkage, "free", module.get()
+            );
+            
+            BasicBlock* currentBB = builder->GetInsertBlock();
+            BasicBlock* freeBB = BasicBlock::Create(*context, "free." + name, currentBB->getParent());
+            
+            builder->SetInsertPoint(freeBB);
+            Value* casted = builder->CreateBitCast(alloca, Type::getInt8PtrTy(*context));
+            builder->CreateCall(freeFunc, {casted});
+            builder->CreateBr(currentBB);
+            
+            currentBB->getParent()->getBasicBlockList().push_back(freeBB);
+        }
+    }
+}
+
+void CodeGen::optimizeIR() {
+    legacy::FunctionPassManager FPM(module.get());
+    FPM.add(createPromoteMemoryToRegisterPass());
+    FPM.add(createInstructionCombiningPass());
+    FPM.add(createReassociatePass());
+    FPM.add(createGVNPass());
+    FPM.add(createCFGSimplificationPass());
+    
+    FPM.doInitialization();
+    for (Function &F : *module) {
+        FPM.run(F);
+    }
+}
+
+
+
 void CodeGen::dump() const {
     module->print(llvm::outs(), nullptr);
 }
