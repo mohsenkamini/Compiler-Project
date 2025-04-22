@@ -1,11 +1,11 @@
-#ifndef CODEGEN_H
-#define CODEGEN_H
+#ifndef CODE_GENERATOR_H
+#define CODE_GENERATOR_H
 
 #include "AST.h"
 
-class CodeGen
-{
+class CodeGen {
 public:
-	void compile(AST *Tree, bool optimize, int k);
+    void compile(ProgramNode *root, bool optimize, int unroll);
 };
-#endif
+
+#endif 
