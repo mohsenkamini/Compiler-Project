@@ -1,13 +1,22 @@
 int x = 0;
 int i, j;
-bool flag = true; 
 for (i = 0; i <= 5; i++) {
   x = i + 2;
 }
 print(x);
+
+
+
+bool flag = true; 
 /* if (flag == true) {
 or
  */
-if (flag) {
-	print(flag);
+/* if (flag) { */
+
+if (flag == false) {
+	print(x);
+} else if (flag) { 
+	print(x);
+} else { 
+	print(x);
 }
