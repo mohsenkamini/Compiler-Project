@@ -323,7 +323,18 @@ std::unique_ptr<ASTNode> Parser::parsePrimary() {
         case Token::identifier: {
             std::string name = currentTok.text.str();
             advance();
-            
+
+            if (currentTok.is(Token::plus_plus) || currentTok.is(Token::minus_minus)) {
+                Token opTok = currentTok;
+                advance();  // consume ++ or --
+                return std::make_unique<UnaryOpNode>(
+                    opTok.is(Token::plus_plus)
+                        ? UnaryOp::INCREMENT
+                        : UnaryOp::DECREMENT,
+                    std::make_unique<VariableNode>(name)
+                );
+            }
+
             // Function call or array access
             if (currentTok.is(Token::l_paren)) {
                 return parseFunctionCall(name);
